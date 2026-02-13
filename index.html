@@ -69,22 +69,30 @@
             margin: 15px 0;
         }
 
+        .spoilage-warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+
         .spoilage-moderate {
             background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+            color: white;
         }
 
         .spoilage-good {
             background: linear-gradient(135deg, #8bc34a 0%, #689f38 100%);
+            color: white;
         }
         
-        /* 3D MODEL CONTAINER WITH GLOW EFFECT */
+        /* 3D MODEL CONTAINER WITH GILL HIGHLIGHT */
         .model-container {
             position: relative;
             width: 100%;
             height: 450px;
             margin: 20px 0;
-            border-radius: 12px;
-            overflow: hidden;
         }
 
         .model-viewer {
@@ -92,65 +100,42 @@
             height: 100%;
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             border-radius: 12px;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.1);
         }
 
-        /* RED GLOW EFFECT FOR SPOILED FISH */
-        .model-viewer.spoiled {
-            animation: redGlow 2s infinite;
-            box-shadow: 0 0 30px rgba(244, 67, 54, 0.8), 
-                        inset 0 0 30px rgba(244, 67, 54, 0.3);
-        }
-
-        @keyframes redGlow {
-            0%, 100% {
-                box-shadow: 0 0 20px rgba(244, 67, 54, 0.6), 
-                            inset 0 0 20px rgba(244, 67, 54, 0.2);
-                filter: brightness(1) hue-rotate(0deg);
-            }
-            50% {
-                box-shadow: 0 0 40px rgba(244, 67, 54, 1), 
-                            inset 0 0 40px rgba(244, 67, 54, 0.5);
-                filter: brightness(1.2) hue-rotate(-10deg);
-            }
-        }
-
-        .model-viewer.moderate {
-            box-shadow: 0 0 20px rgba(255, 152, 0, 0.6);
-        }
-
-        /* GILL AREA ANNOTATION */
-        .gill-annotation {
+        /* GILL AREA HIGHLIGHT OVERLAY */
+        .gill-highlight {
             position: absolute;
-            top: 30%;
-            left: 20%;
-            background: rgba(244, 67, 54, 0.95);
-            color: white;
-            padding: 10px 15px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 0.9em;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            animation: bounce 2s infinite;
+            top: 35%;
+            left: 25%;
+            width: 80px;
+            height: 60px;
+            border: 4px solid #f44336;
+            border-radius: 50%;
+            background: rgba(244, 67, 54, 0.2);
+            animation: blink 1.5s infinite;
             pointer-events: none;
             z-index: 10;
         }
 
-        .gill-annotation::before {
-            content: '';
+        .gill-highlight::before {
+            content: "⚠️ GILL AREA";
             position: absolute;
-            bottom: -10px;
+            top: -30px;
             left: 50%;
             transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 10px solid transparent;
-            border-right: 10px solid transparent;
-            border-top: 10px solid rgba(244, 67, 54, 0.95);
+            background: #f44336;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+            white-space: nowrap;
         }
 
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
         }
 
         /* SPOILAGE INDICATOR */
@@ -339,7 +324,7 @@
         <h1>🐟 Fish Digital Twin</h1>
         <div class="fish-id-display" id="fishIdDisplay">Loading...</div>
         
-        <!-- Spoilage Alert -->
+        <!-- Spoilage Alert (shown when > 40 days) -->
         <div id="spoilageAlert" style="display: none;"></div>
 
         <!-- Spoilage Indicator -->
@@ -351,39 +336,35 @@
             <div class="spoilage-legend">
                 <div class="legend-item">
                     <div class="legend-color" style="background: #4caf50;"></div>
-                    <span>Fresh</span>
+                    <span>Fresh (0-20%)</span>
                 </div>
                 <div class="legend-item">
                     <div class="legend-color" style="background: #ffc107;"></div>
-                    <span>Good</span>
+                    <span>Good (20-40%)</span>
                 </div>
                 <div class="legend-item">
                     <div class="legend-color" style="background: #ff9800;"></div>
-                    <span>Moderate</span>
+                    <span>Moderate (40-70%)</span>
                 </div>
                 <div class="legend-item">
                     <div class="legend-color" style="background: #f44336;"></div>
-                    <span>Spoiled</span>
+                    <span>Spoiled (70-100%)</span>
                 </div>
             </div>
         </div>
         
-        <!-- 3D Fish Model with Glow Effect -->
+        <!-- 3D Fish Model with Gill Highlight -->
         <div class="model-container">
-            <!-- Gill annotation (shown when > 40 days) -->
-            <div id="gillAnnotation" class="gill-annotation" style="display: none;">
-                ⚠️ Gill Area Degraded
-            </div>
+            <!-- Gill highlight overlay (shown when > 40 days) -->
+            <div id="gillHighlight" class="gill-highlight" style="display: none;"></div>
             
             <model-viewer 
-                id="fishModel"
                 class="model-viewer"
                 src="models/fish.glb"
                 alt="3D Fish Model"
                 auto-rotate
                 camera-controls
-                background-color="transparent"
-                shadow-intensity="1">
+                background-color="transparent">
             </model-viewer>
         </div>
         
@@ -398,6 +379,7 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getDatabase, ref, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDScIDpc93KFMNO7iC1dGDR3HgU6KFwkho",
             authDomain: "fish-digital-twin.firebaseapp.com",
@@ -408,18 +390,24 @@
             appId: "1:67165186976:web:8be4fc086f2565b80b5605"
         };
 
+        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
+
+        // Get fish ID from URL
         const urlParams = new URLSearchParams(window.location.search);
         const fishId = urlParams.get('id') || 'A-1001';
 
+        // Calculate days since catch
         function calculateDaysSinceCatch(catchDate) {
             const catch_date = new Date(catchDate);
             const today = new Date();
             const diffTime = Math.abs(today - catch_date);
-            return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays;
         }
 
+        // Calculate spoilage percentage based on days
         function calculateSpoilage(days) {
             if (days <= 7) return Math.min(20, (days / 7) * 20);
             if (days <= 14) return 20 + ((days - 7) / 7) * 20;
@@ -428,14 +416,16 @@
             return Math.min(100, 90 + ((days - 40) / 10) * 10);
         }
 
+        // Get spoilage category
         function getSpoilageCategory(percentage) {
-            if (percentage < 20) return { class: 'spoilage-0-20', text: 'Fresh' };
-            if (percentage < 40) return { class: 'spoilage-20-40', text: 'Good' };
-            if (percentage < 70) return { class: 'spoilage-40-70', text: 'Moderate' };
-            if (percentage < 90) return { class: 'spoilage-70-90', text: 'Aging' };
-            return { class: 'spoilage-90-100', text: 'Spoiled' };
+            if (percentage < 20) return { class: 'spoilage-0-20', text: 'Fresh', color: '#4caf50' };
+            if (percentage < 40) return { class: 'spoilage-20-40', text: 'Good', color: '#ffc107' };
+            if (percentage < 70) return { class: 'spoilage-40-70', text: 'Moderate', color: '#ff9800' };
+            if (percentage < 90) return { class: 'spoilage-70-90', text: 'Aging', color: '#ff5722' };
+            return { class: 'spoilage-90-100', text: 'Spoiled', color: '#f44336' };
         }
 
+        // Get age category
         function getAgeCategory(days) {
             if (days <= 7) return { class: 'age-fresh', text: 'Very Fresh' };
             if (days <= 14) return { class: 'age-good', text: 'Fresh' };
@@ -444,6 +434,7 @@
             return { class: 'age-spoiled', text: 'Spoiled' };
         }
 
+        // Get temperature category
         function getTempCategory(temp) {
             if (temp < -10) return { class: 'temp-frozen', text: 'Deep Frozen' };
             if (temp < 0) return { class: 'temp-cold', text: 'Frozen' };
@@ -451,14 +442,14 @@
             return { class: 'temp-warm', text: 'Warm' };
         }
 
+        // Display fish data
         async function displayFishData(id) {
             const fishInfoDiv = document.getElementById('fishInfo');
             const fishIdDisplay = document.getElementById('fishIdDisplay');
             const spoilageAlert = document.getElementById('spoilageAlert');
             const spoilageIndicator = document.getElementById('spoilageIndicator');
             const spoilageBar = document.getElementById('spoilageBar');
-            const gillAnnotation = document.getElementById('gillAnnotation');
-            const fishModel = document.getElementById('fishModel');
+            const gillHighlight = document.getElementById('gillHighlight');
 
             try {
                 const fishRef = ref(database, 'fishes/' + id);
@@ -466,13 +457,19 @@
 
                 if (!snapshot.exists()) {
                     fishIdDisplay.textContent = `Fish ID: ${id} - NOT FOUND`;
-                    fishInfoDiv.innerHTML = `<div class="error-message"><h2>⚠️ Fish Not Found</h2></div>`;
+                    fishInfoDiv.innerHTML = `
+                        <div class="error-message">
+                            <h2>⚠️ Fish Not Found</h2>
+                            <p>The fish ID "${id}" does not exist in the database.</p>
+                        </div>
+                    `;
                     return;
                 }
 
                 const fishData = snapshot.val();
                 fishIdDisplay.textContent = `Fish ID: ${id}`;
 
+                // Calculate spoilage
                 const daysSinceCatch = calculateDaysSinceCatch(fishData.catchDate);
                 const spoilagePercentage = calculateSpoilage(daysSinceCatch);
                 const spoilageInfo = getSpoilageCategory(spoilagePercentage);
@@ -485,10 +482,9 @@
                 spoilageBar.className = 'spoilage-bar ' + spoilageInfo.class;
                 spoilageBar.textContent = Math.round(spoilagePercentage) + '%';
 
-                // Apply glow effect and annotation based on spoilage
+                // Show gill highlight and alert if > 40 days
                 if (daysSinceCatch > 40) {
-                    fishModel.classList.add('spoiled');
-                    gillAnnotation.style.display = 'block';
+                    gillHighlight.style.display = 'block';
                     spoilageAlert.style.display = 'block';
                     spoilageAlert.className = 'spoilage-alert';
                     spoilageAlert.innerHTML = `
@@ -499,21 +495,20 @@
                         <p style="margin-top: 5px; font-size: 0.9em;">Not recommended for consumption</p>
                     `;
                 } else if (spoilagePercentage >= 40) {
-                    fishModel.classList.add('moderate');
                     spoilageAlert.style.display = 'block';
                     spoilageAlert.className = 'spoilage-alert spoilage-moderate';
                     spoilageAlert.innerHTML = `
                         <h2>⚠️ Moderate Spoilage</h2>
-                        <div class="spoilage-percentage">${Math.round(spoilagePercentage)}%</div>
-                        <p>Quality declining (${daysSinceCatch} days old)</p>
+                        <div class="spoilage-percentage">${Math.round(spoilagePercentage)}% Spoiled</div>
+                        <p>This fish is ${daysSinceCatch} days old - Quality declining</p>
                     `;
                 } else if (spoilagePercentage < 20) {
                     spoilageAlert.style.display = 'block';
                     spoilageAlert.className = 'spoilage-alert spoilage-good';
                     spoilageAlert.innerHTML = `
                         <h2>✅ Excellent Quality</h2>
-                        <div class="spoilage-percentage">${Math.round(spoilagePercentage)}%</div>
-                        <p>Very fresh (${daysSinceCatch} days old)</p>
+                        <div class="spoilage-percentage">${Math.round(spoilagePercentage)}% Spoilage</div>
+                        <p>This fish is very fresh (${daysSinceCatch} days old)</p>
                     `;
                 }
 
@@ -579,14 +574,23 @@
 
                     <div class="info-section">
                         <h2>📝 Additional Notes</h2>
-                        <div class="notes-box">${fishData.notes}</div>
+                        <div class="notes-box">
+                            ${fishData.notes}
+                        </div>
                     </div>
                 `;
             } catch (error) {
-                fishInfoDiv.innerHTML = `<div class="error-message"><h2>⚠️ Error: ${error.message}</h2></div>`;
+                console.error('Error fetching fish data:', error);
+                fishInfoDiv.innerHTML = `
+                    <div class="error-message">
+                        <h2>⚠️ Error Loading Data</h2>
+                        <p>Could not connect to database: ${error.message}</p>
+                    </div>
+                `;
             }
         }
 
+        // Load data when page loads
         window.addEventListener('DOMContentLoaded', () => {
             displayFishData(fishId);
         });
