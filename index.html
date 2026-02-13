@@ -2,61 +2,174 @@
 <html>
 <head>
     <title>Fish Digital Twin</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #e0f7fa;
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             padding: 20px;
         }
         
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
             background-color: white;
             padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
         }
         
         h1 {
             color: #00796b;
             text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.2em;
+        }
+
+        .fish-id-display {
+            text-align: center;
+            color: #666;
+            font-size: 1.1em;
+            margin-bottom: 20px;
         }
         
         .model-viewer {
             width: 100%;
             height: 400px;
-            background-color: #f5f5f5;
-            border-radius: 8px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 12px;
             margin: 20px 0;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.1);
         }
         
-        .info-box {
-            background-color: #f9f9f9;
-            padding: 20px;
-            border-radius: 8px;
+        .info-section {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 25px;
+            border-radius: 12px;
             margin-top: 20px;
+        }
+
+        .info-section h2 {
+            color: #00796b;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 3px solid #00796b;
+            padding-bottom: 10px;
+        }
+        
+        .info-grid {
+            display: grid;
+            gap: 15px;
         }
         
         .info-row {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #ddd;
-        }
-        
-        .info-row:last-child {
-            border-bottom: none;
+            align-items: flex-start;
+            gap: 15px;
         }
         
         .label {
             font-weight: bold;
             color: #00796b;
+            min-width: 180px;
+            flex-shrink: 0;
         }
         
         .value {
             color: #333;
+            flex: 1;
+        }
+
+        .quality-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .quality-5 { background: #4caf50; }
+        .quality-4 { background: #8bc34a; }
+        .quality-3 { background: #ffc107; }
+        .quality-2 { background: #ff9800; }
+        .quality-1 { background: #f44336; }
+
+        .age-badge {
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            color: white;
+            font-size: 1.1em;
+        }
+
+        .age-fresh { background: #4caf50; }
+        .age-good { background: #8bc34a; }
+        .age-moderate { background: #ffc107; }
+        .age-old { background: #ff9800; }
+
+        .temp-badge {
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            color: white;
+            font-size: 1.2em;
+        }
+
+        .temp-frozen { background: #2196f3; }
+        .temp-cold { background: #03a9f4; }
+        .temp-cool { background: #00bcd4; }
+        .temp-warm { background: #ff9800; }
+
+        .notes-box {
+            background: #fff3cd;
+            border-left: 4px solid: #ffc107;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 5px;
+        }
+
+        .error-message {
+            background: #f44336;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2em;
+            color: #666;
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .highlight h3 {
+            margin-bottom: 10px;
+            font-size: 1.3em;
         }
     </style>
     
@@ -65,6 +178,7 @@
 <body>
     <div class="container">
         <h1>🐟 Fish Digital Twin</h1>
+        <div class="fish-id-display" id="fishIdDisplay">Loading...</div>
         
         <!-- 3D Fish Model -->
         <model-viewer 
@@ -73,53 +187,172 @@
             alt="3D Fish Model"
             auto-rotate
             camera-controls
-            background-color="#f5f5f5">
+            background-color="transparent">
         </model-viewer>
         
         <!-- Fish Information -->
-        <div class="info-box">
-            <h2 style="color: #00796b; margin-top: 0;">Fish Information</h2>
-            
-            <div class="info-row">
-                <span class="label">Fish ID:</span>
-                <span class="value">FISH001</span>
-            </div>
-            
-            <div class="info-row">
-                <span class="label">Species:</span>
-                <span class="value">Atlantic Salmon</span>
-            </div>
-            
-            <div class="info-row">
-                <span class="label">Weight:</span>
-                <span class="value">2.5 kg</span>
-            </div>
-            
-            <div class="info-row">
-                <span class="label">Catch Date:</span>
-                <span class="value">February 12, 2026</span>
-            </div>
-            
-            <div class="info-row">
-                <span class="label">Catch Location:</span>
-                <span class="value">Norwegian Sea</span>
-            </div>
-            
-            <div class="info-row">
-                <span class="label">Temperature:</span>
-                <span class="value">4°C</span>
-            </div>
-            
-            <div class="info-row">
-                <span class="label">Freshness Score:</span>
-                <span class="value">95% Fresh</span>
-            </div>
-            
-            <div class="info-row">
-                <span class="label">Quality Grade:</span>
-                <span class="value">Premium A+</span>
-            </div>
+        <div id="fishInfo" class="loading">
+            Loading fish data from database...
         </div>
     </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        // Firebase configuration for fish-digital-twin project
+        const firebaseConfig = {
+            apiKey: "AIzaSyDScIDpc93KFMNO7iC1dGDR3HgU6KFwkho",
+            authDomain: "fish-digital-twin.firebaseapp.com",
+            databaseURL: "https://fish-digital-twin-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "fish-digital-twin",
+            storageBucket: "fish-digital-twin.firebasestorage.app",
+            messagingSenderId: "67165186976",
+            appId: "1:67165186976:web:8be4fc086f2565b80b5605"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // Get fish ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const fishId = urlParams.get('id') || 'A-1001';
+
+        // Calculate days since catch
+        function calculateDaysSinceCatch(catchDate) {
+            const catch_date = new Date(catchDate);
+            const today = new Date();
+            const diffTime = Math.abs(today - catch_date);
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays;
+        }
+
+        // Get age category
+        function getAgeCategory(days) {
+            if (days <= 2) return { class: 'age-fresh', text: 'Very Fresh' };
+            if (days <= 5) return { class: 'age-good', text: 'Fresh' };
+            if (days <= 10) return { class: 'age-moderate', text: 'Moderate' };
+            return { class: 'age-old', text: 'Aging' };
+        }
+
+        // Get temperature category
+        function getTempCategory(temp) {
+            if (temp < -10) return { class: 'temp-frozen', text: 'Deep Frozen' };
+            if (temp < 0) return { class: 'temp-cold', text: 'Frozen' };
+            if (temp <= 4) return { class: 'temp-cool', text: 'Properly Chilled' };
+            return { class: 'temp-warm', text: 'Warm' };
+        }
+
+        // Display fish data
+        async function displayFishData(id) {
+            const fishInfoDiv = document.getElementById('fishInfo');
+            const fishIdDisplay = document.getElementById('fishIdDisplay');
+
+            try {
+                // Get fish data from Firebase
+                const fishRef = ref(database, 'fishes/' + id);
+                const snapshot = await get(fishRef);
+
+                if (!snapshot.exists()) {
+                    fishIdDisplay.textContent = `Fish ID: ${id} - NOT FOUND`;
+                    fishInfoDiv.innerHTML = `
+                        <div class="error-message">
+                            <h2>⚠️ Fish Not Found</h2>
+                            <p>The fish ID "${id}" does not exist in the database.</p>
+                            <p>Please check the QR code or contact support.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const fishData = snapshot.val();
+                fishIdDisplay.textContent = `Fish ID: ${id}`;
+
+                // Calculate days since catch
+                const daysSinceCatch = calculateDaysSinceCatch(fishData.catchDate);
+                const ageInfo = getAgeCategory(daysSinceCatch);
+                const tempInfo = getTempCategory(fishData.currentTemperature);
+
+                fishInfoDiv.innerHTML = `
+                    <div class="highlight">
+                        <h3>🕒 Age: ${daysSinceCatch} Days Since Catch</h3>
+                        <span class="age-badge ${ageInfo.class}">${ageInfo.text}</span>
+                    </div>
+
+                    <div class="highlight">
+                        <h3>🌡️ Current Temperature</h3>
+                        <span class="temp-badge ${tempInfo.class}">${fishData.currentTemperature}°C - ${tempInfo.text}</span>
+                    </div>
+
+                    <div class="info-section">
+                        <h2>📋 Basic Information</h2>
+                        <div class="info-grid">
+                            <div class="info-row">
+                                <span class="label">Species:</span>
+                                <span class="value">${fishData.species}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Catch Date:</span>
+                                <span class="value">${fishData.catchDate} (${daysSinceCatch} days ago)</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Catch Location:</span>
+                                <span class="value">${fishData.location}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Processing Method:</span>
+                                <span class="value">${fishData.processingMethod}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-section">
+                        <h2>⭐ Quality Assessment</h2>
+                        <div class="info-grid">
+                            <div class="info-row">
+                                <span class="label">Quality Score:</span>
+                                <span class="value">
+                                    <span class="quality-badge quality-${fishData.qualityScore}">
+                                        ${fishData.qualityScore} / 5
+                                    </span>
+                                </span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Current Temperature:</span>
+                                <span class="value">${fishData.currentTemperature}°C</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Temperature Log:</span>
+                                <span class="value">${fishData.temperatureLog}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-section">
+                        <h2>📝 Additional Notes</h2>
+                        <div class="notes-box">
+                            ${fishData.notes}
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error fetching fish data:', error);
+                fishInfoDiv.innerHTML = `
+                    <div class="error-message">
+                        <h2>⚠️ Error Loading Data</h2>
+                        <p>Could not connect to database: ${error.message}</p>
+                        <p>Please check your internet connection and Firebase configuration.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Load data when page loads
+        window.addEventListener('DOMContentLoaded', () => {
+            displayFishData(fishId);
+        });
+    </script>
 </body>
 </html>
