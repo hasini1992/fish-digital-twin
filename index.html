@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fish Digital Twin</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e0f7fa;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #00796b;
+            text-align: center;
+        }
+        
+        .model-viewer {
+            width: 100%;
+            height: 400px;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .info-box {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .label {
+            font-weight: bold;
+            color: #00796b;
+        }
+        
+        .value {
+            color: #333;
+        }
+    </style>
+    
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>🐟 Fish Digital Twin</h1>
+        
+        <!-- 3D Fish Model -->
+        <model-viewer 
+            class="model-viewer"
+            src="models/fish.glb"
+            alt="3D Fish Model"
+            auto-rotate
+            camera-controls
+            background-color="#f5f5f5">
+        </model-viewer>
+        
+        <!-- Fish Information -->
+        <div class="info-box">
+            <h2 style="color: #00796b; margin-top: 0;">Fish Information</h2>
+            
+            <div class="info-row">
+                <span class="label">Fish ID:</span>
+                <span class="value">FISH001</span>
+            </div>
+            
+            <div class="info-row">
+                <span class="label">Species:</span>
+                <span class="value">Atlantic Salmon</span>
+            </div>
+            
+            <div class="info-row">
+                <span class="label">Weight:</span>
+                <span class="value">2.5 kg</span>
+            </div>
+            
+            <div class="info-row">
+                <span class="label">Catch Date:</span>
+                <span class="value">February 12, 2026</span>
+            </div>
+            
+            <div class="info-row">
+                <span class="label">Catch Location:</span>
+                <span class="value">Norwegian Sea</span>
+            </div>
+            
+            <div class="info-row">
+                <span class="label">Temperature:</span>
+                <span class="value">4°C</span>
+            </div>
+            
+            <div class="info-row">
+                <span class="label">Freshness Score:</span>
+                <span class="value">95% Fresh</span>
+            </div>
+            
+            <div class="info-row">
+                <span class="label">Quality Grade:</span>
+                <span class="value">Premium A+</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
