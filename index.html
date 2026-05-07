@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fish Digital Twin - Fixed Quality Monitoring</title>
+    <title>Fish Digital Twin - Fixed 3D Hotspots</title>
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -19,20 +19,25 @@
         .fish-container { position: relative; width: 100%; height: 450px; background: #FFFFFF; border: 2px solid #e0e0e0; border-radius: 15px; }
         model-viewer { width: 100%; height: 100%; }
 
-        /* --- FIXED 3D HOTSPOT STYLING --- */
-        .Hotspot { background: transparent; border: none; pointer-events: none; }
-        .spot-indicator { border-radius: 50%; transition: opacity 0.8s ease, background-color 0.8s ease; opacity: 0; filter: blur(6px); }
+        /* --- 3D PINNED HOTSPOT STYLING --- */
+        .Hotspot {
+            background: transparent;
+            border: none;
+            pointer-events: none; /* Prevents the dot from blocking the mouse when you try to rotate */
+        }
         
-        /* Belly spot: Anchored to side/bottom */
-        #bellySpot { width: 130px; height: 60px; transform: translate(-50%, -50%); }
-        /* Eye spot: Small circle anchored to head */
-        #eyeSpot { width: 25px; height: 25px; transform: translate(-50%, -50%); }
+        .spot-indicator {
+            border-radius: 50%;
+            transition: opacity 0.8s ease, background-color 0.8s ease;
+            opacity: 0; /* Hidden by default */
+            filter: blur(8px);
+        }
+        
+        /* The Glow effect */
+        #bellySpot { width: 120px; height: 60px; transform: translate(-50%, -50%); }
+        #eyeSpot { width: 30px; height: 30px; transform: translate(-50%, -50%); }
 
         .status-card { background: #f8f9fa; padding: 18px; border-radius: 10px; border-left: 5px solid #667eea; margin-bottom: 15px; }
-        .status-badge { display: inline-block; padding: 6px 18px; border-radius: 20px; font-weight: bold; margin-bottom: 10px; }
-        .badge-critical { background: #f44336; color: white; animation: pulse 2s infinite; }
-        .badge-stable { background: #4CAF50; color: white; }
-        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
         .metric { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; }
         .metric-value { font-weight: bold; }
     </style>
@@ -41,29 +46,27 @@
     <div class="container">
         <div class="header">
             <h1>🐟 Fish Digital Twin</h1>
-            <p>Real-time Spoilage Monitoring - Fixed 3D Anchoring</p>
+            <p>Spoilage Monitoring - Surface Locked Hotspots</p>
         </div>
 
-        <div id="loading" style="text-align:center; padding: 50px;">Loading Fish Data...</div>
-
-        <div id="mainContent" class="content" style="display: none;">
+        <div id="mainContent" class="content">
             <div class="model-section">
                 <div class="fish-container">
                     <model-viewer 
                         id="fishModel"
                         src="https://hasini1992.github.io/fish-digital-twin/fish.glb"
-                        auto-rotate camera-controls shadow-intensity="0.6">
+                        auto-rotate 
+                        camera-controls 
+                        shadow-intensity="0.6">
                         
-                        <!-- FIXED BELLY PIN -->
                         <button class="Hotspot" slot="hotspot-belly" 
-                            data-position="0.02m -0.05m 0.04m" 
+                            data-position="0.0m -0.05m 0.05m" 
                             data-normal="0m 0m 1m">
                             <div class="spot-indicator" id="bellySpot"></div>
                         </button>
                         
-                        <!-- FIXED EYE PIN -->
                         <button class="Hotspot" slot="hotspot-eye" 
-                            data-position="0.22m 0.05m 0.015m" 
+                            data-position="0.22m 0.05m 0.02m" 
                             data-normal="1m 0m 0m">
                             <div class="spot-indicator" id="eyeSpot"></div>
                         </button>
@@ -73,14 +76,13 @@
 
             <div class="info-section">
                 <div class="status-card">
-                    <div id="statusBadge" class="status-badge">--</div>
                     <h2 id="fishId">WHOLE-FISH-001</h2>
-                    <p id="species">Loading...</p>
+                    <div class="metric"><span>Body Spoilage (ΔE)</span><span id="bodyVal" class="metric-value">--</span></div>
+                    <div class="metric"><span>Eye Spoilage (ΔE)</span><span id="eyeVal" class="metric-value">--</span></div>
                 </div>
-                <div class="status-card">
-                    <div class="metric"><span>Body Delta E</span><span id="bodyVal" class="metric-value">--</span></div>
-                    <div class="metric"><span>Eye Delta E</span><span id="eyeVal" class="metric-value">--</span></div>
-                </div>
+                <p style="font-size: 0.8em; color: #666; padding: 10px;">
+                    Note: If the spots aren't visible, rotate the fish. They are pinned to the surface and will hide when the fish turns its back.
+                </p>
             </div>
         </div>
     </div>
@@ -93,45 +95,38 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        function updateSpoilageDisplay(bodyDE, eyeDE, status) {
+        function updateSpoilageDisplay(bodyDE, eyeDE) {
             const bEl = document.getElementById('bellySpot');
             const eEl = document.getElementById('eyeSpot');
 
-            // Belly Spoilage Logic
+            // Logic for Body/Belly Glow
             if (bodyDE > 6) {
                 bEl.style.opacity = "0.7";
-                bEl.style.backgroundColor = "#8B0000"; // Dark Red
-                bEl.style.boxShadow = "0 0 35px #8B0000";
+                bEl.style.backgroundColor = "red";
+                bEl.style.boxShadow = "0 0 30px red";
             } else if (bodyDE > 3.5) {
                 bEl.style.opacity = "0.5";
-                bEl.style.backgroundColor = "#ffa500"; // Orange
-                bEl.style.boxShadow = "0 0 25px #ffa500";
+                bEl.style.backgroundColor = "orange";
+                bEl.style.boxShadow = "0 0 20px orange";
             } else { bEl.style.opacity = "0"; }
 
-            // Eye Spoilage Logic
+            // Logic for Eye Glow
             if (eyeDE > 10) {
                 eEl.style.opacity = "0.8";
-                eEl.style.backgroundColor = "#505050"; // Opaque
-                eEl.style.boxShadow = "0 0 15px #505050";
+                eEl.style.backgroundColor = "red";
+                eEl.style.boxShadow = "0 0 15px red";
             } else if (eyeDE > 5) {
                 eEl.style.opacity = "0.5";
-                eEl.style.backgroundColor = "#D3D3D3"; // Cloudy
+                eEl.style.backgroundColor = "orange";
             } else { eEl.style.opacity = "0"; }
-
-            const badge = document.getElementById('statusBadge');
-            badge.textContent = status;
-            badge.className = `status-badge badge-${status.toLowerCase()}`;
         }
 
         onValue(ref(db, `fishes/WHOLE-FISH-001`), (snapshot) => {
-            document.getElementById('loading').style.display = 'none';
             if (snapshot.exists()) {
                 const data = snapshot.val();
-                document.getElementById('mainContent').style.display = 'grid';
-                document.getElementById('species').textContent = data.species || 'Experimental Sample';
                 document.getElementById('bodyVal').textContent = (data.bodyDeltaE_max || 0).toFixed(2);
                 document.getElementById('eyeVal').textContent = (data.eyeDeltaE_max || 0).toFixed(2);
-                updateSpoilageDisplay(data.bodyDeltaE_max || 0, data.eyeDeltaE_max || 0, data.spoilageStatus || 'STABLE');
+                updateSpoilageDisplay(data.bodyDeltaE_max || 0, data.eyeDeltaE_max || 0);
             }
         });
     </script>
