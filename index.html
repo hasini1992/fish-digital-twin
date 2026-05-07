@@ -3,218 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fish Digital Twin - Quality Monitoring</title>
+    <title>Fish Digital Twin - Fixed Quality Monitoring</title>
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+            display: flex; align-items: center; justify-content: center; padding: 20px;
         }
-        
-        .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            max-width: 1200px;
-            width: 100%;
-            overflow: hidden;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-        
-        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
-        
-        .content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            padding: 40px;
-        }
-        
-        .model-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .fish-container {
-            position: relative;
-            width: 100%;
-            height: 500px;
-            border-radius: 15px;
-            background: #FFFFFF;
-            border: 2px solid #e0e0e0;
-        }
-        
-        model-viewer {
-            width: 100%;
-            height: 100%;
-            --poster-color: transparent;
-        }
-        
-        /* --- 3D HOTSPOT STYLING --- */
-        .Hotspot {
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            pointer-events: none; /* Allows rotation clicks to pass through to the model */
-        }
-        
-        .spot-indicator {
-            border-radius: 50%;
-            transition: opacity 1s ease, background-color 1s ease;
-            opacity: 0;
-            filter: blur(5px);
-        }
-        
-        #bellySpot {
-            width: 140px;
-            height: 70px;
-            transform: translate(-50%, -50%);
-        }
-        
-        #eyeSpot {
-            width: 30px;
-            height: 30px;
-            transform: translate(-50%, -50%);
-        }
+        .container { background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 1100px; width: 100%; overflow: hidden; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; text-align: center; }
+        .content { display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; padding: 30px; }
+        .fish-container { position: relative; width: 100%; height: 450px; background: #FFFFFF; border: 2px solid #e0e0e0; border-radius: 15px; }
+        model-viewer { width: 100%; height: 100%; }
 
-        .color-info {
-            margin-top: 15px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            width: 100%;
-            text-align: center;
-        }
+        /* --- FIXED 3D HOTSPOT STYLING --- */
+        .Hotspot { background: transparent; border: none; pointer-events: none; }
+        .spot-indicator { border-radius: 50%; transition: opacity 0.8s ease, background-color 0.8s ease; opacity: 0; filter: blur(6px); }
         
-        .color-info h4 { margin-bottom: 10px; color: #333; }
-        
-        .color-indicators {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        
-        .indicator-box {
-            padding: 10px;
-            border-radius: 8px;
-            background: white;
-            border: 2px solid #ddd;
-        }
-        
-        .indicator-label { font-size: 0.85em; color: #666; margin-bottom: 5px; }
-        .indicator-value { font-weight: bold; font-size: 1.1em; }
-        
-        .color-scale {
-            display: flex;
-            justify-content: space-between;
-            margin: 15px 0;
-            height: 30px;
-            border-radius: 5px;
-            overflow: hidden;
-            border: 2px solid #ddd;
-        }
-        
-        .scale-segment {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.65em;
-            color: white;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-            font-weight: bold;
-        }
-        
-        .info-section {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        
-        .status-card {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            border-left: 5px solid #667eea;
-        }
-        
-        .status-badge {
-            display: inline-block;
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 1.1em;
-            margin-bottom: 15px;
-        }
-        
+        /* Belly spot: Anchored to side/bottom */
+        #bellySpot { width: 130px; height: 60px; transform: translate(-50%, -50%); }
+        /* Eye spot: Small circle anchored to head */
+        #eyeSpot { width: 25px; height: 25px; transform: translate(-50%, -50%); }
+
+        .status-card { background: #f8f9fa; padding: 18px; border-radius: 10px; border-left: 5px solid #667eea; margin-bottom: 15px; }
+        .status-badge { display: inline-block; padding: 6px 18px; border-radius: 20px; font-weight: bold; margin-bottom: 10px; }
+        .badge-critical { background: #f44336; color: white; animation: pulse 2s infinite; }
         .badge-stable { background: #4CAF50; color: white; }
-        .badge-critical { background: #f44336; color: white; animation: badgePulse 2s infinite; }
-        
-        @keyframes badgePulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.8; transform: scale(1.05); }
-        }
-        
-        .metric {
-            display: flex;
-            justify-content: space-between;
-            padding: 15px 0;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        
-        .metric:last-child { border-bottom: none; }
-        .metric-label { font-weight: 600; color: #555; }
-        .metric-value { font-weight: bold; font-size: 1.2em; }
-        .metric-value.critical { color: #f44336; }
-        .metric-value.good { color: #4CAF50; }
-        .quality-stars { color: #FFC107; font-size: 1.5em; }
-        
-        .alert-box {
-            background: #f8d7da;
-            border: 2px solid #f44336;
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 20px;
-        }
-        
-        .alert-box strong { color: #721c24; }
-        
-        .loading {
-            text-align: center;
-            padding: 40px;
-            font-size: 1.2em;
-            color: #666;
-        }
-        
-        @media (max-width: 768px) {
-            .content { grid-template-columns: 1fr; }
-            .fish-container { height: 400px; }
-        }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        .metric { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; }
+        .metric-value { font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>🐟 Fish Digital Twin</h1>
-            <p>Real-time Quality Monitoring - Color-Coded Spoilage Detection</p>
+            <p>Real-time Spoilage Monitoring - Fixed 3D Anchoring</p>
         </div>
 
-        <div id="loading" class="loading">Loading fish data...</div>
+        <div id="loading" style="text-align:center; padding: 50px;">Loading Fish Data...</div>
 
         <div id="mainContent" class="content" style="display: none;">
             <div class="model-section">
@@ -222,77 +52,34 @@
                     <model-viewer 
                         id="fishModel"
                         src="https://hasini1992.github.io/fish-digital-twin/fish.glb"
-                        alt="Fish 3D Model"
-                        auto-rotate 
-                        camera-controls
-                        shadow-intensity="0.5"
-                        camera-orbit="0deg 75deg 105%"
-                        exposure="1.2">
+                        auto-rotate camera-controls shadow-intensity="0.6">
                         
-                        <!-- BELLY HOTSPOT: Coordinates fixed to stick to outer skin -->
+                        <!-- FIXED BELLY PIN -->
                         <button class="Hotspot" slot="hotspot-belly" 
-                            data-position="0.405m 0.084m 0.1m" 
+                            data-position="0.02m -0.05m 0.04m" 
                             data-normal="0m 0m 1m">
                             <div class="spot-indicator" id="bellySpot"></div>
                         </button>
                         
-                        <!-- EYE HOTSPOT: Coordinates fixed to stick to head -->
+                        <!-- FIXED EYE PIN -->
                         <button class="Hotspot" slot="hotspot-eye" 
-                            data-position="0.22m 0.05m 0.02m" 
+                            data-position="0.22m 0.05m 0.015m" 
                             data-normal="1m 0m 0m">
                             <div class="spot-indicator" id="eyeSpot"></div>
                         </button>
-                        
                     </model-viewer>
-                </div>
-                
-                <div class="color-info">
-                    <h4>🎨 Spoilage Indicators</h4>
-                    <div class="color-indicators">
-                        <div class="indicator-box">
-                            <div class="indicator-label">Body Color</div>
-                            <div id="bodyColorName" class="indicator-value">--</div>
-                            <div style="font-size: 0.8em; color: #666; margin-top: 5px;">
-                                ΔE: <strong id="bodyDEDisplay">--</strong>
-                            </div>
-                        </div>
-                        <div class="indicator-box">
-                            <div class="indicator-label">Eye Clarity</div>
-                            <div id="eyeColorName" class="indicator-value">--</div>
-                            <div style="font-size: 0.8em; color: #666; margin-top: 5px;">
-                                ΔE: <strong id="eyeDEDisplay">--</strong>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
 
             <div class="info-section">
                 <div class="status-card">
-                    <div id="statusBadge" class="status-badge">Loading...</div>
-                    <h2 id="fishId">Fish ID</h2>
-                    <p id="species"></p>
+                    <div id="statusBadge" class="status-badge">--</div>
+                    <h2 id="fishId">WHOLE-FISH-001</h2>
+                    <p id="species">Loading...</p>
                 </div>
-
                 <div class="status-card">
-                    <h3>Quality Analysis</h3>
-                    <div class="metric">
-                        <span class="metric-label">Quality Score</span>
-                        <span id="qualityScore" class="metric-value quality-stars"></span>
-                    </div>
-                    <div class="metric">
-                        <span class="metric-label">Body ΔE (Color Change)</span>
-                        <span id="bodyDE" class="metric-value"></span>
-                    </div>
-                    <div class="metric">
-                        <span class="metric-label">Eye ΔE (Clarity Loss)</span>
-                        <span id="eyeDE" class="metric-value"></span>
-                    </div>
-                </div>
-
-                <div id="alertBox" class="alert-box" style="display: none;">
-                    <strong>⚠️ CRITICAL SPOILAGE DETECTED</strong>
-                    <p id="alertMessage"></p>
+                    <div class="metric"><span>Body Delta E</span><span id="bodyVal" class="metric-value">--</span></div>
+                    <div class="metric"><span>Eye Delta E</span><span id="eyeVal" class="metric-value">--</span></div>
                 </div>
             </div>
         </div>
@@ -306,81 +93,45 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        function getBodyColor(deltaE) {
-            if (deltaE < 2.0) return { color: '#C0C0C0', name: 'Fresh Silver', opacity: 0 };
-            if (deltaE < 3.5) return { color: '#A8A8A8', name: 'Light Gray', opacity: 0.3 };
-            if (deltaE < 6.0) return { color: '#8B7355', name: 'Gray-Brown', opacity: 0.5 };
-            if (deltaE < 10.0) return { color: '#654321', name: 'Brown', opacity: 0.7 };
-            return { color: '#8B0000', name: 'Dark Red (SPOILED)', opacity: 0.8 };
+        function updateSpoilageDisplay(bodyDE, eyeDE, status) {
+            const bEl = document.getElementById('bellySpot');
+            const eEl = document.getElementById('eyeSpot');
+
+            // Belly Spoilage Logic
+            if (bodyDE > 6) {
+                bEl.style.opacity = "0.7";
+                bEl.style.backgroundColor = "#8B0000"; // Dark Red
+                bEl.style.boxShadow = "0 0 35px #8B0000";
+            } else if (bodyDE > 3.5) {
+                bEl.style.opacity = "0.5";
+                bEl.style.backgroundColor = "#ffa500"; // Orange
+                bEl.style.boxShadow = "0 0 25px #ffa500";
+            } else { bEl.style.opacity = "0"; }
+
+            // Eye Spoilage Logic
+            if (eyeDE > 10) {
+                eEl.style.opacity = "0.8";
+                eEl.style.backgroundColor = "#505050"; // Opaque
+                eEl.style.boxShadow = "0 0 15px #505050";
+            } else if (eyeDE > 5) {
+                eEl.style.opacity = "0.5";
+                eEl.style.backgroundColor = "#D3D3D3"; // Cloudy
+            } else { eEl.style.opacity = "0"; }
+
+            const badge = document.getElementById('statusBadge');
+            badge.textContent = status;
+            badge.className = `status-badge badge-${status.toLowerCase()}`;
         }
 
-        function getEyeColor(deltaE) {
-            if (deltaE < 5.0) return { color: '#FFFFFF', name: 'Clear', opacity: 0 };
-            if (deltaE < 10.0) return { color: '#D3D3D3', name: 'Slightly Cloudy', opacity: 0.4 };
-            if (deltaE < 30.0) return { color: '#808080', name: 'Cloudy', opacity: 0.6 };
-            return { color: '#505050', name: 'Opaque (Degraded)', opacity: 0.8 };
-        }
-
-        function updateFishOverlays(bodyDE, eyeDE) {
-            const bodyColorData = getBodyColor(bodyDE);
-            const eyeColorData = getEyeColor(eyeDE);
-
-            document.getElementById('bodyColorName').textContent = bodyColorData.name;
-            document.getElementById('bodyColorName').style.color = bodyColorData.color;
-            document.getElementById('eyeColorName').textContent = eyeColorData.name;
-            document.getElementById('eyeColorName').style.color = eyeColorData.color;
-            document.getElementById('bodyDEDisplay').textContent = bodyDE.toFixed(2);
-            document.getElementById('eyeDEDisplay').textContent = eyeDE.toFixed(2);
-
-            const bellySpot = document.getElementById('bellySpot');
-            const eyeSpot = document.getElementById('eyeSpot');
-
-            // Apply Spoilage Indicators
-            if (bodyColorData.opacity > 0) {
-                bellySpot.style.opacity = bodyColorData.opacity;
-                bellySpot.style.backgroundColor = bodyColorData.color;
-                bellySpot.style.boxShadow = `0 0 30px 10px ${bodyColorData.color}`;
-            } else {
-                bellySpot.style.opacity = 0;
-            }
-
-            if (eyeColorData.opacity > 0) {
-                eyeSpot.style.opacity = eyeColorData.opacity;
-                eyeSpot.style.backgroundColor = eyeColorData.color;
-                eyeSpot.style.boxShadow = `0 0 15px 5px ${eyeColorData.color}`;
-            } else {
-                eyeSpot.style.opacity = 0;
-            }
-        }
-
-        const fishRef = ref(db, `fishes/WHOLE-FISH-001`);
-        onValue(fishRef, (snapshot) => {
+        onValue(ref(db, `fishes/WHOLE-FISH-001`), (snapshot) => {
             document.getElementById('loading').style.display = 'none';
             if (snapshot.exists()) {
                 const data = snapshot.val();
                 document.getElementById('mainContent').style.display = 'grid';
-                document.getElementById('fishId').textContent = 'WHOLE-FISH-001';
-                document.getElementById('species').textContent = data.species || 'Unknown';
-                
-                const status = data.spoilageStatus || 'UNKNOWN';
-                document.getElementById('statusBadge').textContent = status;
-                document.getElementById('statusBadge').className = `status-badge badge-${status.toLowerCase()}`;
-                
-                const bodyDE = data.bodyDeltaE_max || 0;
-                const eyeDE = data.eyeDeltaE_max || 0;
-                
-                document.getElementById('bodyDE').textContent = bodyDE.toFixed(2);
-                document.getElementById('eyeDE').textContent = eyeDE.toFixed(2);
-                document.getElementById('qualityScore').textContent = '⭐'.repeat(data.qualityScore || 0) + '☆'.repeat(5 - (data.qualityScore || 0));
-                
-                updateFishOverlays(bodyDE, eyeDE);
-                
-                if (status === 'CRITICAL') {
-                    document.getElementById('alertBox').style.display = 'block';
-                    document.getElementById('alertMessage').innerHTML = `Body ΔE: ${bodyDE.toFixed(2)} <br> Eye ΔE: ${eyeDE.toFixed(2)}`;
-                } else {
-                    document.getElementById('alertBox').style.display = 'none';
-                }
+                document.getElementById('species').textContent = data.species || 'Experimental Sample';
+                document.getElementById('bodyVal').textContent = (data.bodyDeltaE_max || 0).toFixed(2);
+                document.getElementById('eyeVal').textContent = (data.eyeDeltaE_max || 0).toFixed(2);
+                updateSpoilageDisplay(data.bodyDeltaE_max || 0, data.eyeDeltaE_max || 0, data.spoilageStatus || 'STABLE');
             }
         });
     </script>
