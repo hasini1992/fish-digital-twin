@@ -3,131 +3,192 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Fish Coordinate Finder</title>
+    <title>Fish Digital Twin - Quality Monitoring</title>
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', sans-serif;
-            background: #1a1a1a;
-            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             display: flex;
-            flex-direction: column;
             align-items: center;
+            justify-content: center;
             padding: 20px;
         }
-
-        #ui-panel {
-            background: #2c3e50;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 1200px;
             width: 100%;
-            max-width: 600px;
-            border: 2px solid #3498db;
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
             text-align: center;
         }
-
-        .code-output {
-            background: #000;
-            color: #00ff00;
-            padding: 12px;
-            margin-top: 10px;
-            font-family: monospace;
-            border-radius: 5px;
-            text-align: left;
-            user-select: all; /* Easy to copy */
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 40px;
         }
-
-        .fish-view {
+        .fish-container {
+            position: relative;
             width: 100%;
-            max-width: 600px;
-            height: 450px;
-            background: white;
+            height: 500px;
             border-radius: 15px;
-            border: 4px solid #3498db;
+            background: #FFFFFF;
+            border: 2px solid #e0e0e0;
         }
-
         model-viewer {
             width: 100%;
             height: 100%;
         }
 
-        button {
-            padding: 10px 20px;
-            background: #3498db;
-            color: white;
+        /* --- HOTSPOT STYLING --- */
+        .Hotspot {
+            background: transparent;
             border: none;
-            border-radius: 5px;
             cursor: pointer;
+        }
+        .spot-indicator {
+            border-radius: 50%;
+            transition: all 0.5s ease-in-out;
+            opacity: 0;
+        }
+        #bellySpot {
+            width: 100px;
+            height: 50px;
+            transform: translate(-50%, -50%);
+        }
+        #eyeSpot {
+            width: 25px;
+            height: 25px;
+            transform: translate(-50%, -50%);
+        }
+
+        .status-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+            margin-bottom: 20px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 20px;
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
-        
-        button.active {
-            background: #e74c3c;
-        }
+        .badge-stable { background: #4CAF50; color: white; }
+        .badge-critical { background: #f44336; color: white; }
+        .metric { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #ddd; }
+        .metric-value { font-weight: bold; font-size: 1.1em; }
     </style>
 </head>
 <body>
+    <div class="container">
+        <div class="header">
+            <h1>🐟 Fish Digital Twin</h1>
+            <p>Real-time Quality Monitoring - Spoilage Detection</p>
+        </div>
 
-    <div id="ui-panel">
-        <h2>Coordinate Finder</h2>
-        <p style="margin-bottom: 15px;">1. Rotate the fish to see the spot you want.<br>
-        2. Click the button below to <b>Lock Rotation</b>.<br>
-        3. Click the fish to get coordinates.</p>
-        
-        <button id="lockBtn">🔓 ROTATION: ON</button>
-        
-        <div class="code-output" id="outPos">data-position="Waiting for click..."</div>
-        <div class="code-output" id="outNorm">data-normal="Waiting for click..."</div>
-    </div>
+        <div id="mainContent" class="content">
+            <div class="model-section">
+                <div class="fish-container">
+                    <model-viewer 
+                        id="fishModel"
+                        src="https://hasini1992.github.io/fish-digital-twin/fish.glb"
+                        auto-rotate 
+                        camera-controls
+                        shadow-intensity="1">
+                        
+                        <button class="Hotspot" slot="hotspot-belly" 
+                            data-position="0m -0.05m 0m" 
+                            data-normal="0m -1m 0m">
+                            <div class="spot-indicator" id="bellySpot"></div>
+                        </button>
+                        
+                        <button class="Hotspot" slot="hotspot-eye" 
+                            data-position="0.22m 0.04m 0.01m" 
+                            data-normal="1m 0m 0m">
+                            <div class="spot-indicator" id="eyeSpot"></div>
+                        </button>
+                    </model-viewer>
+                </div>
+            </div>
 
-    <div class="fish-view">
-        <model-viewer 
-            id="viewer"
-            src="https://hasini1992.github.io/fish-digital-twin/fish.glb"
-            camera-controls
-            shadow-intensity="1">
-        </model-viewer>
+            <div class="info-section">
+                <div class="status-card">
+                    <div id="statusBadge" class="status-badge">Loading...</div>
+                    <h2 id="fishId">WHOLE-FISH-001</h2>
+                </div>
+                <div class="status-card">
+                    <div class="metric">
+                        <span>Body Delta E (Spoilage)</span>
+                        <span id="bodyVal" class="metric-value">--</span>
+                    </div>
+                    <div class="metric">
+                        <span>Eye Delta E (Clarity)</span>
+                        <span id="eyeVal" class="metric-value">--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script type="module">
-        const viewer = document.querySelector('#viewer');
-        const lockBtn = document.querySelector('#lockBtn');
-        const outPos = document.querySelector('#outPos');
-        const outNorm = document.querySelector('#outNorm');
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
-        let isLocked = false;
+        const firebaseConfig = { databaseURL: "https://fish-digital-twin-default-rtdb.asia-southeast1.firebasedatabase.app" };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
-        // Toggle Rotation Lock
-        lockBtn.addEventListener('click', () => {
-            isLocked = !isLocked;
-            if (isLocked) {
-                viewer.removeAttribute('camera-controls');
-                lockBtn.innerText = "🔒 ROTATION: LOCKED";
-                lockBtn.classList.add('active');
-            } else {
-                viewer.setAttribute('camera-controls', '');
-                lockBtn.innerText = "🔓 ROTATION: ON";
-                lockBtn.classList.remove('active');
+        function updateUI(bodyDE, eyeDE, status) {
+            document.getElementById('bodyVal').textContent = bodyDE.toFixed(2);
+            document.getElementById('eyeVal').textContent = eyeDE.toFixed(2);
+            
+            const badge = document.getElementById('statusBadge');
+            badge.textContent = status;
+            badge.className = `status-badge badge-${status.toLowerCase()}`;
+
+            const bSpot = document.getElementById('bellySpot');
+            const eSpot = document.getElementById('eyeSpot');
+
+            // Logic: Orange for Warning, Red for Critical
+            if (bodyDE > 6) {
+                bSpot.style.opacity = 0.7;
+                bSpot.style.backgroundColor = "red";
+                bSpot.style.boxShadow = "0 0 30px red";
+            } else if (bodyDE > 3.5) {
+                bSpot.style.opacity = 0.5;
+                bSpot.style.backgroundColor = "orange";
+                bSpot.style.boxShadow = "0 0 20px orange";
             }
-        });
 
-        // Capture touch coordinates
-        viewer.addEventListener('mousedown', (event) => {
-            // Only capture if rotation is locked to prevent "swallowing" the click
-            if (!isLocked) return;
+            if (eyeDE > 10) {
+                eSpot.style.opacity = 0.7;
+                eSpot.style.backgroundColor = "red";
+                eSpot.style.boxShadow = "0 0 15px red";
+            } else if (eyeDE > 5) {
+                eSpot.style.opacity = 0.5;
+                eSpot.style.backgroundColor = "orange";
+                eSpot.style.boxShadow = "0 0 10px orange";
+            }
+        }
 
-            const rect = viewer.getBoundingClientRect();
-            const x = event.clientX - rect.left;
-            const y = event.clientY - rect.top;
-            
-            const hit = viewer.positionAndNormalFromPoint(x, y);
-            
-            if (hit) {
-                outPos.innerText = `data-position="${hit.position.x}m ${hit.position.y}m ${hit.position.z}m"`;
-                outNorm.innerText = `data-normal="${hit.normal.x}m ${hit.normal.y}m ${hit.normal.z}m"`;
+        const fishRef = ref(db, `fishes/WHOLE-FISH-001`);
+        onValue(fishRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const d = snapshot.val();
+                updateUI(d.bodyDeltaE_max || 0, d.eyeDeltaE_max || 0, d.spoilageStatus || 'STABLE');
             }
         });
     </script>
