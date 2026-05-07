@@ -3,145 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fish Digital Twin - Fixed 3D Monitoring</title>
+    <title>Fish Digital Twin - Smart Diagnostic HUD</title>
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
             min-height: 100vh;
             display: flex; align-items: center; justify-content: center; padding: 20px;
         }
-        .container { background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 1100px; width: 100%; overflow: hidden; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; text-align: center; }
-        .content { display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; padding: 30px; }
-        .fish-container { position: relative; width: 100%; height: 450px; background: #FFFFFF; border: 2px solid #e0e0e0; border-radius: 15px; }
-        
+        .container {
+            background: #1e293b;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            max-width: 1200px; width: 100%; overflow: hidden;
+            border: 1px solid #334155;
+        }
+        .header {
+            background: #334155; padding: 20px; text-align: center;
+            border-bottom: 2px solid #6366f1;
+        }
+        .header h1 { font-size: 1.8em; letter-spacing: 1px; color: #818cf8; }
+
+        .content { display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px; padding: 25px; }
+
+        .viewer-section {
+            position: relative; background: #000; border-radius: 16px;
+            border: 1px solid #475569; height: 500px; overflow: hidden;
+        }
         model-viewer { width: 100%; height: 100%; }
 
-        /* --- THE FIXED 3D ANCHOR STYLING --- */
-        .Hotspot {
-            background: transparent;
-            border: none;
-            pointer-events: none; /* Crucial: Mouse clicks go THROUGH the dot to rotate the fish */
+        /* --- THE SMART HUD OVERLAY --- */
+        .diagnostic-hud {
+            position: absolute; top: 15px; left: 15px;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid #6366f1; border-radius: 12px;
+            padding: 15px; width: 220px; pointer-events: none;
+            backdrop-filter: blur(8px);
         }
+        .hud-title { font-size: 0.7em; text-transform: uppercase; color: #818cf8; margin-bottom: 10px; font-weight: bold; }
         
-        .spot-glow {
-            border-radius: 50%;
-            transition: opacity 0.5s ease, background-color 0.5s ease;
-            opacity: 0; 
-            filter: blur(10px);
-            box-shadow: 0 0 25px currentColor;
+        /* The Mini-Map Fish Silhouette */
+        .fish-map {
+            width: 100%; height: 80px; position: relative;
+            background: url('https://upload.wikimedia.org/wikipedia/commons/a/a2/Blue_fish_icon.svg') no-repeat center;
+            background-size: contain; opacity: 0.6; margin: 10px 0;
+            filter: invert(1);
         }
-        
-        /* Shape of the spoilage area on the body */
-        #bodyGlow { width: 150px; height: 80px; transform: translate(-50%, -50%); }
-        /* Shape of the spoilage area on the eye */
-        #eyeGlow { width: 30px; height: 30px; transform: translate(-50%, -50%); }
+        .hud-marker {
+            position: absolute; border-radius: 50%;
+            transition: all 0.5s ease; opacity: 0;
+            box-shadow: 0 0 10px currentColor;
+        }
+        #hudBelly { width: 30px; height: 15px; bottom: 20%; left: 45%; }
+        #hudEye { width: 8px; height: 8px; top: 35%; right: 20%; }
 
-        .info-card { background: #f8f9fa; padding: 20px; border-radius: 12px; border-left: 6px solid #667eea; }
-        .metric { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
-        .metric-value { font-weight: bold; font-size: 1.2em; }
+        /* Data Cards */
+        .data-panel { display: flex; flex-direction: column; gap: 15px; }
+        .status-card {
+            background: #334155; padding: 20px; border-radius: 16px;
+            border-left: 4px solid #6366f1;
+        }
+        .metric-row { display: flex; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid #475569; }
+        .val { font-family: monospace; font-weight: bold; color: #38bdf8; font-size: 1.2em; }
+        .badge {
+            display: inline-block; padding: 4px 12px; border-radius: 6px;
+            font-size: 0.8em; font-weight: bold; margin-bottom: 8px;
+        }
+        .critical { background: #ef4444; color: white; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
+        .stable { background: #22c55e; color: white; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🐟 Fish Digital Twin</h1>
-            <p>Quality Monitoring - Surface-Locked 3D Indicators</p>
-        </div>
 
-        <div class="content">
-            <div class="model-section">
-                <div class="fish-container">
-                    <model-viewer 
-                        id="fishModel"
-                        src="https://hasini1992.github.io/fish-digital-twin/fish.glb"
-                        auto-rotate camera-controls shadow-intensity="1">
-                        
-                        <button class="Hotspot" slot="hotspot-belly" 
-                            data-position="0.0m -0.08m 0.06m" 
-                            data-normal="0m 0m 1m">
-                            <div class="spot-glow" id="bodyGlow"></div>
-                        </button>
-                        
-                        <button class="Hotspot" slot="hotspot-eye" 
-                            data-position="0.22m 0.05m 0.02m" 
-                            data-normal="1m 0m 0m">
-                            <div class="spot-glow" id="eyeGlow"></div>
-                        </button>
+<div class="container">
+    <div class="header"><h1>FISH DIGITAL TWIN ENGINE</h1></div>
+    <div class="content">
+        
+        <div class="viewer-section">
+            <model-viewer 
+                id="fishModel"
+                src="https://hasini1992.github.io/fish-digital-twin/fish.glb"
+                auto-rotate camera-controls shadow-intensity="1"
+                environment-image="neutral" exposure="1">
+            </model-viewer>
 
-                    </model-viewer>
+            <div class="diagnostic-hud">
+                <div class="hud-title">📡 Spoilage Mapping</div>
+                <div class="fish-map">
+                    <div id="hudBelly" class="hud-marker"></div>
+                    <div id="hudEye" class="hud-marker"></div>
+                </div>
+                <div style="font-size: 0.7em; color: #94a3b8;">
+                    Markers indicate real-time spoilage detection zones.
                 </div>
             </div>
+        </div>
 
-            <div class="info-section">
-                <div class="info-card">
-                    <h2 id="fishId">WHOLE-FISH-001</h2>
-                    <div class="metric">
-                        <span>Body Delta E (Color)</span>
-                        <span id="bodyVal" class="metric-value">--</span>
-                    </div>
-                    <div class="metric">
-                        <span>Eye Delta E (Clarity)</span>
-                        <span id="eyeVal" class="metric-value">--</span>
-                    </div>
+        <div class="data-panel">
+            <div class="status-card">
+                <div id="statusBadge" class="badge">ANALYZING...</div>
+                <h2 style="color: #cbd5e1; margin-bottom: 5px;">WHOLE-FISH-001</h2>
+                <div style="font-size: 0.8em; color: #94a3b8;">Species: <span id="speciesName">--</span></div>
+            </div>
+
+            <div class="status-card">
+                <div class="hud-title">Metric Analysis</div>
+                <div class="metric-row">
+                    <span>Body Spoilage (ΔE)</span>
+                    <span id="bodyVal" class="val">--</span>
                 </div>
-                <p style="margin-top: 20px; color: #666; font-size: 0.9em;">
-                    The indicators above are pinned to the 3D surface. Rotate the fish to see them move in sync with the body.
-                </p>
+                <div class="metric-row">
+                    <span>Eye Degradation (ΔE)</span>
+                    <span id="eyeVal" class="val">--</span>
+                </div>
             </div>
         </div>
     </div>
+</div>
 
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getDatabase, ref, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+<script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getDatabase, ref, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
-        const firebaseConfig = { databaseURL: "https://fish-digital-twin-default-rtdb.asia-southeast1.firebasedatabase.app" };
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+    const firebaseConfig = { databaseURL: "https://fish-digital-twin-default-rtdb.asia-southeast1.firebasedatabase.app" };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-        function update3DVisuals(bodyDE, eyeDE) {
-            const bodyIndicator = document.getElementById('bodyGlow');
-            const eyeIndicator = document.getElementById('eyeGlow');
+    function updateSystem(bodyDE, eyeDE, status, species) {
+        // Update Text
+        document.getElementById('bodyVal').textContent = bodyDE.toFixed(2);
+        document.getElementById('eyeVal').textContent = eyeDE.toFixed(2);
+        document.getElementById('speciesName').textContent = species;
+        
+        const badge = document.getElementById('statusBadge');
+        badge.textContent = status;
+        badge.className = `badge ${status === 'CRITICAL' ? 'critical' : 'stable'}`;
 
-            // --- Body Spoilage Logic ---
-            if (bodyDE > 6) {
-                bodyIndicator.style.opacity = "0.7";
-                bodyIndicator.style.backgroundColor = "red";
-                bodyIndicator.style.color = "red";
-            } else if (bodyDE > 3.5) {
-                bodyIndicator.style.opacity = "0.5";
-                bodyIndicator.style.backgroundColor = "orange";
-                bodyIndicator.style.color = "orange";
-            } else {
-                bodyIndicator.style.opacity = "0";
-            }
+        // Update HUD Markers
+        const bMarker = document.getElementById('hudBelly');
+        const eMarker = document.getElementById('hudEye');
 
-            // --- Eye Spoilage Logic ---
-            if (eyeDE > 10) {
-                eyeIndicator.style.opacity = "0.7";
-                eyeIndicator.style.backgroundColor = "red";
-                eyeIndicator.style.color = "red";
-            } else if (eyeDE > 5) {
-                eyeIndicator.style.opacity = "0.5";
-                eyeIndicator.style.backgroundColor = "orange";
-                eyeIndicator.style.color = "orange";
-            } else {
-                eyeIndicator.style.opacity = "0";
-            }
+        // Belly Logic
+        if (bodyDE > 6) {
+            bMarker.style.opacity = 1; bMarker.style.backgroundColor = "#ef4444";
+        } else if (bodyDE > 3.5) {
+            bMarker.style.opacity = 1; bMarker.style.backgroundColor = "#f59e0b";
+        } else { bMarker.style.opacity = 0; }
+
+        // Eye Logic
+        if (eyeDE > 10) {
+            eMarker.style.opacity = 1; eMarker.style.backgroundColor = "#ef4444";
+        } else if (eyeDE > 5) {
+            eMarker.style.opacity = 1; eMarker.style.backgroundColor = "#f59e0b";
+        } else { eMarker.style.opacity = 0; }
+    }
+
+    onValue(ref(db, `fishes/WHOLE-FISH-001`), (snapshot) => {
+        if (snapshot.exists()) {
+            const d = snapshot.val();
+            updateSystem(d.bodyDeltaE_max || 0, d.eyeDeltaE_max || 0, d.spoilageStatus || 'STABLE', d.species || 'Salmonidae');
         }
+    });
+</script>
 
-        onValue(ref(db, `fishes/WHOLE-FISH-001`), (snapshot) => {
-            if (snapshot.exists()) {
-                const data = snapshot.val();
-                document.getElementById('bodyVal').textContent = (data.bodyDeltaE_max || 0).toFixed(2);
-                document.getElementById('eyeVal').textContent = (data.eyeDeltaE_max || 0).toFixed(2);
-                update3DVisuals(data.bodyDeltaE_max || 0, data.eyeDeltaE_max || 0);
-            }
-        });
-    </script>
 </body>
 </html>
