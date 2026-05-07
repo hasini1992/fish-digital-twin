@@ -31,22 +31,6 @@
             text-align: center;
         }
         .header h1 { font-size: 2.5em; margin-bottom: 10px; }
-        
-        #forceTestBtn {
-            margin-top: 20px;
-            padding: 15px 30px;
-            background: #ff4757;
-            color: white;
-            border: 2px solid white;
-            border-radius: 10px;
-            font-size: 1.2em;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-            transition: transform 0.1s;
-        }
-        #forceTestBtn:active { transform: scale(0.95); }
-
         .content {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -71,6 +55,34 @@
             height: 100%;
             --poster-color: transparent;
         }
+        
+        /* --- 3D HOTSPOT STYLING --- */
+        .Hotspot {
+            background: transparent;
+            border: none;
+            box-sizing: border-box;
+            cursor: pointer;
+        }
+        .spot-indicator {
+            border-radius: 50%;
+            transition: all 0.5s ease-in-out;
+            opacity: 0; /* Hidden by default if fresh */
+        }
+        /* Belly spot is wide and oval */
+        #bellySpot {
+            width: 120px;
+            height: 60px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+        /* Eye spot is a small circle */
+        #eyeSpot {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
         .color-info {
             margin-top: 15px;
             padding: 15px;
@@ -174,8 +186,7 @@
     <div class="container">
         <div class="header">
             <h1>🐟 Fish Digital Twin</h1>
-            <p>Real-time Quality Monitoring - Color-Coded Spoilage Detection</p>
-            <button id="forceTestBtn">🚨 NUKE TEST: TURN EVERYTHING RED 🚨</button>
+            <p>Real-time Quality Monitoring - Hotspot Spoilage Detection</p>
         </div>
 
         <div id="loading" class="loading">Loading fish data...</div>
@@ -192,6 +203,15 @@
                         shadow-intensity="0.5"
                         camera-orbit="0deg 75deg 105%"
                         exposure="1.2">
+                        
+                        <button class="Hotspot" slot="hotspot-belly" data-position="0 -0.05 0" data-normal="0 -1 0">
+                            <div class="spot-indicator" id="bellySpot"></div>
+                        </button>
+                        
+                        <button class="Hotspot" slot="hotspot-eye" data-position="0.2 0.05 0.02" data-normal="1 0 0">
+                            <div class="spot-indicator" id="eyeSpot"></div>
+                        </button>
+
                     </model-viewer>
                 </div>
                 
@@ -213,6 +233,14 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <div class="color-scale">
+                        <div class="scale-segment" style="background: #C0C0C0;">Fresh<br>0-2</div>
+                        <div class="scale-segment" style="background: #A8A8A8;">Good<br>2-3.5</div>
+                        <div class="scale-segment" style="background: #8B7355;">Mod<br>3.5-6</div>
+                        <div class="scale-segment" style="background: #654321;">Poor<br>6-10</div>
+                        <div class="scale-segment" style="background: #8B0000;">Critical<br>10+</div>
+                    </div>
                 </div>
             </div>
 
@@ -221,6 +249,8 @@
                     <div id="statusBadge" class="status-badge">Loading...</div>
                     <h2 id="fishId">Fish ID</h2>
                     <p id="species"></p>
+                    <p id="location"></p>
+                    <p id="catchDate"></p>
                 </div>
 
                 <div class="status-card">
@@ -236,6 +266,14 @@
                     <div class="metric">
                         <span class="metric-label">Eye ΔE (Clarity Loss)</span>
                         <span id="eyeDE" class="metric-value"></span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Thermal Variance</span>
+                        <span id="thermalVar" class="metric-value"></span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Samples Analyzed</span>
+                        <span id="samples" class="metric-value"></span>
                     </div>
                 </div>
 
@@ -255,47 +293,115 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // --- THE NUKE TEST ---
-        document.getElementById('forceTestBtn').addEventListener('click', async () => {
-            const modelViewer = document.getElementById('fishModel');
-            if (!modelViewer.model) return alert("Wait for model to load!");
+        const urlParams = new URLSearchParams(window.location.search);
+        const fishId = urlParams.get('id') || 'WHOLE-FISH-001';
 
-            let count = 0;
-            // Target EVERY single material inside the 3D file
-            for (const material of modelViewer.model.materials) {
-                // Strip texture
-                if (material.pbrMetallicRoughness.baseColorTexture) {
-                    try { material.pbrMetallicRoughness.baseColorTexture.setTexture(null); } catch(e){}
-                }
-                // Apply pure Red
-                material.pbrMetallicRoughness.setBaseColorFactor([1, 0, 0, 1]);
-                count++;
+        // --- DEV TOOL: CLICK FISH TO GET EXACT COORDINATES ---
+        // This makes it easy for you to position the glowing spots perfectly
+        const viewer = document.querySelector('#fishModel');
+        viewer.addEventListener('click', (event) => {
+            const hit = viewer.positionAndNormalFromPoint(event.clientX, event.clientY);
+            if (hit) {
+                console.log(`Clicked! Replace data-position with: "${hit.position.toString()}"`);
+                console.log(`Replace data-normal with: "${hit.normal.toString()}"`);
+                alert(`You clicked the fish! \nCheck your browser Developer Console for the exact coordinates to paste into the HTML to move the glowing dots.`);
             }
-            alert(`Just attempted to paint all ${count} materials RED. \n\nDid the fish change color?`);
         });
 
-        // Firebase logic
-        const fishRef = ref(db, `fishes/WHOLE-FISH-001`);
+        function getBodyColor(deltaE) {
+            if (deltaE < 2.0) return { color: '#C0C0C0', name: 'Fresh Silver', opacity: 0 };
+            if (deltaE < 3.5) return { color: '#A8A8A8', name: 'Light Gray', opacity: 0.3 };
+            if (deltaE < 6.0) return { color: '#8B7355', name: 'Gray-Brown', opacity: 0.5 };
+            if (deltaE < 10.0) return { color: '#654321', name: 'Brown', opacity: 0.7 };
+            return { color: '#8B0000', name: 'Dark Red (SPOILED)', opacity: 0.8 };
+        }
+
+        function getEyeColor(deltaE) {
+            if (deltaE < 5.0) return { color: '#FFFFFF', name: 'Clear', opacity: 0 };
+            if (deltaE < 10.0) return { color: '#D3D3D3', name: 'Slightly Cloudy', opacity: 0.4 };
+            if (deltaE < 30.0) return { color: '#808080', name: 'Cloudy', opacity: 0.6 };
+            return { color: '#505050', name: 'Opaque (Degraded)', opacity: 0.8 };
+        }
+
+        function updateFishOverlays(bodyDE, eyeDE) {
+            const bodyColorData = getBodyColor(bodyDE);
+            const eyeColorData = getEyeColor(eyeDE);
+
+            document.getElementById('bodyColorName').textContent = bodyColorData.name;
+            document.getElementById('bodyColorName').style.color = bodyColorData.color;
+            document.getElementById('eyeColorName').textContent = eyeColorData.name;
+            document.getElementById('eyeColorName').style.color = eyeColorData.color;
+            document.getElementById('bodyDEDisplay').textContent = bodyDE.toFixed(2);
+            document.getElementById('eyeDEDisplay').textContent = eyeDE.toFixed(2);
+
+            // Update the glowing hotspots
+            const bellySpot = document.getElementById('bellySpot');
+            const eyeSpot = document.getElementById('eyeSpot');
+
+            if (bodyColorData.opacity === 0) {
+                bellySpot.style.opacity = 0;
+            } else {
+                bellySpot.style.opacity = bodyColorData.opacity;
+                bellySpot.style.backgroundColor = bodyColorData.color;
+                bellySpot.style.boxShadow = `0 0 30px 10px ${bodyColorData.color}`;
+            }
+
+            if (eyeColorData.opacity === 0) {
+                eyeSpot.style.opacity = 0;
+            } else {
+                eyeSpot.style.opacity = eyeColorData.opacity;
+                eyeSpot.style.backgroundColor = eyeColorData.color;
+                eyeSpot.style.boxShadow = `0 0 20px 5px ${eyeColorData.color}`;
+            }
+        }
+
+        const fishRef = ref(db, `fishes/${fishId}`);
+        
         onValue(fishRef, (snapshot) => {
             document.getElementById('loading').style.display = 'none';
             if (snapshot.exists()) {
                 const data = snapshot.val();
                 document.getElementById('mainContent').style.display = 'grid';
-                document.getElementById('fishId').textContent = 'WHOLE-FISH-001';
-                document.getElementById('species').textContent = data.species || 'Unknown Species';
                 
-                document.getElementById('statusBadge').textContent = data.spoilageStatus || 'UNKNOWN';
-                document.getElementById('statusBadge').className = `status-badge badge-${(data.spoilageStatus || 'UNKNOWN').toLowerCase()}`;
+                document.getElementById('fishId').textContent = fishId;
+                document.getElementById('species').textContent = data.species || 'Unknown Species';
+                document.getElementById('location').textContent = '📍 ' + (data.location || 'Unknown');
+                document.getElementById('catchDate').textContent = '📅 Caught: ' + (data.catchDate || 'Unknown');
+                
+                const status = data.spoilageStatus || 'UNKNOWN';
+                const statusBadge = document.getElementById('statusBadge');
+                statusBadge.textContent = status;
+                statusBadge.className = `status-badge badge-${status.toLowerCase()}`;
                 
                 const bodyDE = data.bodyDeltaE_max || 0;
                 const eyeDE = data.eyeDeltaE_max || 0;
+                const thermalVar = data.thermalVariance || 0;
                 
-                document.getElementById('bodyDE').textContent = bodyDE.toFixed(2);
-                document.getElementById('eyeDE').textContent = eyeDE.toFixed(2);
+                document.getElementById('qualityScore').textContent = '⭐'.repeat(data.qualityScore || 0) + '☆'.repeat(5 - (data.qualityScore || 0));
                 
-                if (data.spoilageStatus === 'CRITICAL') {
-                    document.getElementById('alertBox').style.display = 'block';
-                    document.getElementById('alertMessage').innerHTML = `Body ΔE: ${bodyDE.toFixed(2)} <br> Eye ΔE: ${eyeDE.toFixed(2)}`;
+                const bodyDEElement = document.getElementById('bodyDE');
+                bodyDEElement.textContent = bodyDE.toFixed(2);
+                bodyDEElement.className = 'metric-value ' + (bodyDE > 6.0 ? 'critical' : 'good');
+                
+                const eyeDEElement = document.getElementById('eyeDE');
+                eyeDEElement.textContent = eyeDE.toFixed(2);
+                eyeDEElement.className = 'metric-value ' + (eyeDE > 10.0 ? 'critical' : 'good');
+                
+                document.getElementById('thermalVar').textContent = thermalVar.toFixed(1);
+                document.getElementById('samples').textContent = data.samplesAnalyzed || 0;
+                
+                updateFishOverlays(bodyDE, eyeDE);
+                
+                if (status === 'CRITICAL') {
+                    const alertBox = document.getElementById('alertBox');
+                    alertBox.style.display = 'block';
+                    let reasons = [];
+                    if (bodyDE > 6.0) reasons.push(`Body ΔE: ${bodyDE.toFixed(2)} (exceeds 6.0)`);
+                    if (eyeDE > 10.0) reasons.push(`Eye ΔE: ${eyeDE.toFixed(2)} (exceeds 10.0)`);
+                    if (thermalVar > 480) reasons.push(`Thermal: ${thermalVar.toFixed(1)} (exceeds 480)`);
+                    document.getElementById('alertMessage').innerHTML = reasons.join('<br>');
+                } else {
+                    document.getElementById('alertBox').style.display = 'none';
                 }
             }
         });
