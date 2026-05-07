@@ -3,18 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fish Digital Twin </title>
-    
-    <!-- Import Three.js and GLTFLoader -->
-    <script type="importmap">
-    {
-        "imports": {
-            "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
-        }
-    }
-    </script>
-    
+    <title>Fish Digital Twin - Material Color Override</title>
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -59,16 +49,33 @@
             align-items: center;
         }
         
-        #fishCanvas {
+        .model-container {
+            position: relative;
             width: 100%;
             height: 500px;
             border-radius: 15px;
-            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-            cursor: grab;
+            overflow: hidden;
+            background: linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%);
         }
         
-        #fishCanvas:active {
-            cursor: grabbing;
+        model-viewer {
+            width: 100%;
+            height: 100%;
+            --poster-color: transparent;
+        }
+        
+        /* Color overlay that appears over the fish */
+        .color-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            mix-blend-mode: multiply;
+            opacity: 0.6;
+            transition: background-color 1s ease;
+            border-radius: 15px;
         }
         
         .color-info {
@@ -85,23 +92,25 @@
             color: #333;
         }
         
-        .color-bar {
+        .color-scale {
             display: flex;
             justify-content: space-between;
-            margin-top: 10px;
-        }
-        
-        .color-sample {
-            width: 18%;
+            margin: 15px 0;
             height: 40px;
             border-radius: 5px;
+            overflow: hidden;
             border: 2px solid #ddd;
+        }
+        
+        .scale-segment {
+            flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 0.7em;
             color: white;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            font-weight: bold;
         }
         
         .info-section {
@@ -190,7 +199,7 @@
         
         @media (max-width: 768px) {
             .content { grid-template-columns: 1fr; }
-            #fishCanvas { height: 400px; }
+            .model-container { height: 400px; }
         }
     </style>
 </head>
@@ -198,29 +207,46 @@
     <div class="container">
         <div class="header">
             <h1>🐟 Fish Digital Twin</h1>
-            <p>Real-time Quality Monitoring </p>
+            <p>Real-time Quality Monitoring - Fish Color Changes with Spoilage</p>
         </div>
 
         <div id="loading" class="loading">
-            Loading fish 3D model...
+            Loading fish model...
         </div>
 
         <div id="mainContent" class="content" style="display: none;">
             <div class="model-section">
-                <canvas id="fishCanvas"></canvas>
+                <div class="model-container">
+                    <model-viewer 
+                        id="fishModel"
+                        src="https://hasini1992.github.io/fish-digital-twin/fish.glb"
+                        alt="Fish 3D Model"
+                        auto-rotate 
+                        camera-controls
+                        shadow-intensity="1"
+                        environment-image="neutral"
+                        camera-orbit="0deg 75deg 105%"
+                        exposure="1.2">
+                    </model-viewer>
+                    <!-- This overlay will color the fish -->
+                    <div id="colorOverlay" class="color-overlay"></div>
+                </div>
                 
                 <div class="color-info">
-                    <h4>🎨 Fish Material Colors Change Based on Spoilage</h4>
-                    <div class="color-bar">
-                        <div class="color-sample" style="background: #C0C0C0;">Fresh<br>0-2</div>
-                        <div class="color-sample" style="background: #A8A8A8;">Good<br>2-3.5</div>
-                        <div class="color-sample" style="background: #8B7355;">Moderate<br>3.5-6</div>
-                        <div class="color-sample" style="background: #654321;">Poor<br>6-10</div>
-                        <div class="color-sample" style="background: #8B0000;">Critical<br>10+</div>
+                    <h4>🎨 Fish Color Based on ΔE Analysis</h4>
+                    <div class="color-scale">
+                        <div class="scale-segment" style="background: #C0C0C0;">Fresh<br>0-2</div>
+                        <div class="scale-segment" style="background: #A8A8A8;">Good<br>2-3.5</div>
+                        <div class="scale-segment" style="background: #8B7355;">Moderate<br>3.5-6</div>
+                        <div class="scale-segment" style="background: #654321;">Poor<br>6-10</div>
+                        <div class="scale-segment" style="background: #8B0000;">Critical<br>10+</div>
                     </div>
-                    <p style="margin-top: 10px; font-size: 0.9em;">
-                        <strong>Body:</strong> <span id="bodyColorName">--</span> (ΔE: <span id="bodyDEDisplay">--</span>)<br>
-                        <strong>Eyes:</strong> <span id="eyeColorName">--</span> (ΔE: <span id="eyeDEDisplay">--</span>)
+                    <p style="font-size: 0.95em; color: #333;">
+                        <strong>Current Fish Color:</strong> <span id="fishColorName">Loading...</span><br>
+                        <span style="font-size: 0.85em; color: #666;">
+                            Body ΔE: <strong id="bodyDEVal">--</strong> | 
+                            Eye ΔE: <strong id="eyeDEVal">--</strong>
+                        </span>
                     </p>
                 </div>
             </div>
@@ -245,7 +271,7 @@
                         <span id="bodyDE" class="metric-value"></span>
                     </div>
                     <div class="metric">
-                        <span class="metric-label">Eye ΔE (Clarity)</span>
+                        <span class="metric-label">Eye ΔE (Clarity Loss)</span>
                         <span id="eyeDE" class="metric-value"></span>
                     </div>
                     <div class="metric">
@@ -274,11 +300,6 @@
     </div>
 
     <script type="module">
-        import * as THREE from 'three';
-        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-        
-        // Import Firebase
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getDatabase, ref, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
@@ -286,194 +307,83 @@
             databaseURL: "https://fish-digital-twin-default-rtdb.asia-southeast1.firebasedatabase.app"
         };
 
-        const firebaseApp = initializeApp(firebaseConfig);
-        const db = getDatabase(firebaseApp);
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
         const urlParams = new URLSearchParams(window.location.search);
         const fishId = urlParams.get('id') || 'WHOLE-FISH-001';
 
-        // Three.js setup
-        const canvas = document.getElementById('fishCanvas');
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xe3f2fd);
+        const modelViewer = document.getElementById('fishModel');
+        const colorOverlay = document.getElementById('colorOverlay');
         
-        const camera = new THREE.PerspectiveCamera(
-            45,
-            canvas.clientWidth / canvas.clientHeight,
-            0.1,
-            1000
-        );
-        camera.position.set(0, 1, 5);
-        
-        const renderer = new THREE.WebGLRenderer({ 
-            canvas: canvas, 
-            antialias: true 
+        // Wait for model to load
+        modelViewer.addEventListener('load', () => {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'grid';
+            console.log('Fish model loaded successfully');
         });
-        renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        renderer.shadowMap.enabled = true;
-        
-        // Lights
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-        scene.add(ambientLight);
-        
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        directionalLight.position.set(5, 5, 5);
-        directionalLight.castShadow = true;
-        scene.add(directionalLight);
-        
-        // Controls
-        const controls = new OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
-        controls.autoRotate = true;
-        controls.autoRotateSpeed = 2.0;
-        
-        // Load fish model
-        let fishModel = null;
-        let bodyMaterial = null;
-        let eyeMaterial = null;
-        
-        const loader = new GLTFLoader();
-        loader.load(
-            'https://hasini1992.github.io/fish-digital-twin/fish.glb',
-            (gltf) => {
-                fishModel = gltf.scene;
-                
-                // Scale and position
-                fishModel.scale.set(1, 1, 1);
-                fishModel.position.set(0, 0, 0);
-                
-                // Find and store materials
-                fishModel.traverse((child) => {
-                    if (child.isMesh) {
-                        child.castShadow = true;
-                        child.receiveShadow = true;
-                        
-                        // Try to identify body and eye materials by name
-                        if (child.material.name && child.material.name.toLowerCase().includes('body')) {
-                            bodyMaterial = child.material;
-                        } else if (child.material.name && child.material.name.toLowerCase().includes('eye')) {
-                            eyeMaterial = child.material;
-                        } else {
-                            // If no specific names, use first material as body
-                            if (!bodyMaterial) bodyMaterial = child.material;
-                        }
-                        
-                        console.log('Material found:', child.material.name || 'unnamed');
-                    }
-                });
-                
-                scene.add(fishModel);
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('mainContent').style.display = 'grid';
-                
-                console.log('Fish model loaded successfully');
-            },
-            (progress) => {
-                const percent = (progress.loaded / progress.total * 100).toFixed(0);
-                document.getElementById('loading').textContent = `Loading fish model... ${percent}%`;
-            },
-            (error) => {
-                console.error('Error loading fish model:', error);
-                document.getElementById('loading').textContent = 'Error loading fish model. Using backup...';
-                
-                // Fallback: create simple fish geometry
-                const geometry = new THREE.CapsuleGeometry(0.3, 2, 16, 32);
-                bodyMaterial = new THREE.MeshStandardMaterial({ color: 0xC0C0C0 });
-                const mesh = new THREE.Mesh(geometry, bodyMaterial);
-                scene.add(mesh);
-                
-                document.getElementById('mainContent').style.display = 'grid';
-            }
-        );
-        
-        // Function to get color based on Delta E
-        function getColorFromDeltaE(deltaE) {
-            if (deltaE < 2.0) {
-                return { hex: 0xC0C0C0, name: 'Fresh Silver', rgb: [192, 192, 192] };
-            } else if (deltaE < 3.5) {
-                return { hex: 0xA8A8A8, name: 'Light Gray', rgb: [168, 168, 168] };
-            } else if (deltaE < 6.0) {
-                return { hex: 0x8B7355, name: 'Gray-Brown', rgb: [139, 115, 85] };
-            } else if (deltaE < 10.0) {
-                return { hex: 0x654321, name: 'Brown', rgb: [101, 67, 33] };
+
+        // Function to determine color based on Delta E
+        function getFishColor(bodyDE, eyeDE) {
+            let color, name, rgb;
+            
+            if (bodyDE < 2.0) {
+                // Fresh - Silver/White
+                color = 'rgba(192, 192, 192, 0.3)';
+                name = 'Fresh Silver';
+                rgb = '#C0C0C0';
+            } else if (bodyDE < 3.5) {
+                // Good - Light Gray
+                color = 'rgba(168, 168, 168, 0.4)';
+                name = 'Light Gray (Good)';
+                rgb = '#A8A8A8';
+            } else if (bodyDE < 6.0) {
+                // Moderate - Gray-Brown
+                color = 'rgba(139, 115, 85, 0.5)';
+                name = 'Gray-Brown (Moderate)';
+                rgb = '#8B7355';
+            } else if (bodyDE < 10.0) {
+                // Poor - Brown
+                color = 'rgba(101, 67, 33, 0.6)';
+                name = 'Brown (Poor Quality)';
+                rgb = '#654321';
             } else {
-                return { hex: 0x8B0000, name: 'Dark Red (Spoiled)', rgb: [139, 0, 0] };
+                // Critical - Dark Red (Spoiled)
+                color = 'rgba(139, 0, 0, 0.7)';
+                name = 'Dark Red (SPOILED)';
+                rgb = '#8B0000';
             }
+            
+            // Eye degradation affects overall appearance
+            if (eyeDE > 30.0) {
+                // Very degraded eyes - add more opacity
+                color = color.replace(/[\d.]+\)$/, '0.8)');
+            }
+            
+            return { color, name, rgb };
         }
-        
-        function getEyeColorFromDeltaE(deltaE) {
-            if (deltaE < 5.0) {
-                return { hex: 0xFFFFFF, name: 'Clear White', rgb: [255, 255, 255] };
-            } else if (deltaE < 10.0) {
-                return { hex: 0xD3D3D3, name: 'Cloudy Gray', rgb: [211, 211, 211] };
-            } else if (deltaE < 30.0) {
-                return { hex: 0x808080, name: 'Gray (Degraded)', rgb: [128, 128, 128] };
-            } else {
-                return { hex: 0x505050, name: 'Opaque Dark (Severe)', rgb: [80, 80, 80] };
-            }
+
+        // Function to apply color to fish
+        function applyFishColor(bodyDE, eyeDE) {
+            const fishColor = getFishColor(bodyDE, eyeDE);
+            
+            // Apply color overlay to fish only (not background)
+            colorOverlay.style.backgroundColor = fishColor.color;
+            
+            // Update display
+            document.getElementById('fishColorName').textContent = fishColor.name;
+            document.getElementById('fishColorName').style.color = fishColor.rgb;
+            document.getElementById('fishColorName').style.fontWeight = 'bold';
+            
+            console.log(`Fish color applied: ${fishColor.name} for Body ΔE=${bodyDE}, Eye ΔE=${eyeDE}`);
         }
-        
-        // Function to update fish colors
-        function updateFishColors(bodyDE, eyeDE) {
-            const bodyColor = getColorFromDeltaE(bodyDE);
-            const eyeColor = getEyeColorFromDeltaE(eyeDE);
-            
-            // Update body material
-            if (bodyMaterial) {
-                bodyMaterial.color.setHex(bodyColor.hex);
-                bodyMaterial.needsUpdate = true;
-            }
-            
-            // Update eye material (if separate material exists)
-            if (eyeMaterial) {
-                eyeMaterial.color.setHex(eyeColor.hex);
-                eyeMaterial.needsUpdate = true;
-            }
-            
-            // Update model to apply all materials
-            if (fishModel) {
-                fishModel.traverse((child) => {
-                    if (child.isMesh && child.material) {
-                        // Apply body color to all materials by default
-                        child.material.color.setHex(bodyColor.hex);
-                        child.material.needsUpdate = true;
-                    }
-                });
-            }
-            
-            // Update UI
-            document.getElementById('bodyColorName').textContent = bodyColor.name;
-            document.getElementById('bodyColorName').style.color = `rgb(${bodyColor.rgb[0]}, ${bodyColor.rgb[1]}, ${bodyColor.rgb[2]})`;
-            
-            document.getElementById('eyeColorName').textContent = eyeColor.name;
-            document.getElementById('eyeColorName').style.color = `rgb(${eyeColor.rgb[0]}, ${eyeColor.rgb[1]}, ${eyeColor.rgb[2]})`;
-            
-            console.log(`Fish colors updated: Body=${bodyColor.name} (ΔE ${bodyDE}), Eye=${eyeColor.name} (ΔE ${eyeDE})`);
-        }
-        
-        // Animation loop
-        function animate() {
-            requestAnimationFrame(animate);
-            controls.update();
-            renderer.render(scene, camera);
-        }
-        animate();
-        
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            camera.aspect = canvas.clientWidth / canvas.clientHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-        });
-        
+
         // Get quality stars
         function getQualityStars(score) {
             return '⭐'.repeat(score) + '☆'.repeat(5 - score);
         }
 
-        // Load fish data from Firebase
+        // Load fish data
         const fishRef = ref(db, `fishes/${fishId}`);
         
         onValue(fishRef, (snapshot) => {
@@ -512,14 +422,14 @@
                 document.getElementById('thermalVar').textContent = thermalVar.toFixed(1);
                 document.getElementById('samples').textContent = samples;
                 
-                // Update displays
-                document.getElementById('bodyDEDisplay').textContent = bodyDE.toFixed(2);
-                document.getElementById('eyeDEDisplay').textContent = eyeDE.toFixed(2);
+                // Update ΔE displays
+                document.getElementById('bodyDEVal').textContent = bodyDE.toFixed(2);
+                document.getElementById('eyeDEVal').textContent = eyeDE.toFixed(2);
                 
-                // ⭐⭐⭐ UPDATE ACTUAL FISH MODEL COLORS ⭐⭐⭐
-                updateFishColors(bodyDE, eyeDE);
+                // ⭐⭐⭐ APPLY FISH COLOR (NOT BACKGROUND) ⭐⭐⭐
+                applyFishColor(bodyDE, eyeDE);
                 
-                // Alert box for critical fish
+                // Alert box
                 if (status === 'CRITICAL') {
                     const alertBox = document.getElementById('alertBox');
                     alertBox.style.display = 'block';
@@ -536,6 +446,9 @@
                 document.getElementById('analysisType').textContent = '🔬 ' + (data.analysisType || 'Not analyzed');
                 document.getElementById('segmentation').textContent = '🎯 ' + (data.segmentationMethod || 'Unknown');
                 document.getElementById('lastAnalyzed').textContent = '🕐 ' + (data.lastAnalyzed || 'Never');
+            } else {
+                document.getElementById('loading').textContent = '❌ Fish not found';
+                document.getElementById('loading').style.display = 'block';
             }
         });
     </script>
