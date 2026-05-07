@@ -3,194 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fish Digital Twin - Quality Monitoring</title>
+    <title>Fish Digital Twin - Manual Alignment</title>
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            font-family: 'Segoe UI', sans-serif;
+            background: #1a1a1a;
+            color: white;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
             padding: 20px;
         }
+
         .container {
             background: white;
             border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            max-width: 1200px;
             width: 100%;
+            max-width: 900px;
             overflow: hidden;
+            color: #333;
         }
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
-        .content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            padding: 40px;
-        }
-        .fish-container {
+
+        .fish-view {
+            width: 100%;
+            height: 400px;
+            background: #f0f0f0;
             position: relative;
-            width: 100%;
-            height: 500px;
-            border-radius: 15px;
-            background: #FFFFFF;
-            border: 2px solid #e0e0e0;
-        }
-        model-viewer {
-            width: 100%;
-            height: 100%;
         }
 
-        /* --- HOTSPOT STYLING --- */
-        .Hotspot {
-            background: transparent;
-            border: none;
-            cursor: pointer;
-        }
-        .spot-indicator {
+        model-viewer { width: 100%; height: 100%; }
+
+        /* HOTSPOT GLOW */
+        .Hotspot { background: transparent; border: none; }
+        .glow {
+            width: 80px;
+            height: 40px;
+            background: rgba(255, 0, 0, 0.6);
             border-radius: 50%;
-            transition: all 0.5s ease-in-out;
-            opacity: 0;
-        }
-        #bellySpot {
-            width: 100px;
-            height: 50px;
-            transform: translate(-50%, -50%);
-        }
-        #eyeSpot {
-            width: 25px;
-            height: 25px;
+            filter: blur(10px);
+            box-shadow: 0 0 20px red;
             transform: translate(-50%, -50%);
         }
 
-        .status-card {
-            background: #f8f9fa;
+        .adjustment-panel {
             padding: 20px;
-            border-radius: 10px;
-            border-left: 5px solid #667eea;
-            margin-bottom: 20px;
+            background: #2d3436;
+            color: white;
         }
-        .status-badge {
-            display: inline-block;
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
-        .badge-stable { background: #4CAF50; color: white; }
-        .badge-critical { background: #f44336; color: white; }
-        .metric { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #ddd; }
-        .metric-value { font-weight: bold; font-size: 1.1em; }
+
+        .slider-group { margin-bottom: 15px; }
+        input[type=range] { width: 100%; margin: 10px 0; }
+        .coord-readout { font-family: monospace; color: #00ff00; background: #000; padding: 5px; }
     </style>
 </head>
 <body>
+
     <div class="container">
-        <div class="header">
-            <h1>🐟 Fish Digital Twin</h1>
-            <p>Real-time Quality Monitoring - Spoilage Detection</p>
+        <div class="fish-view">
+            <model-viewer id="viewer" src="https://hasini1992.github.io/fish-digital-twin/fish.glb" camera-controls shadow-intensity="1">
+                <button class="Hotspot" id="tempHotspot" slot="hotspot-test" data-position="0m 0m 0m" data-normal="0m 1m 0m">
+                    <div class="glow"></div>
+                </button>
+            </model-viewer>
         </div>
 
-        <div id="mainContent" class="content">
-            <div class="model-section">
-                <div class="fish-container">
-                    <model-viewer 
-                        id="fishModel"
-                        src="https://hasini1992.github.io/fish-digital-twin/fish.glb"
-                        auto-rotate 
-                        camera-controls
-                        shadow-intensity="1">
-                        
-                        <button class="Hotspot" slot="hotspot-belly" 
-                            data-position="0m -0.05m 0m" 
-                            data-normal="0m -1m 0m">
-                            <div class="spot-indicator" id="bellySpot"></div>
-                        </button>
-                        
-                        <button class="Hotspot" slot="hotspot-eye" 
-                            data-position="0.22m 0.04m 0.01m" 
-                            data-normal="1m 0m 0m">
-                            <div class="spot-indicator" id="eyeSpot"></div>
-                        </button>
-                    </model-viewer>
-                </div>
+        <div class="adjustment-panel">
+            <h3>🛠️ Manual Alignment Tool</h3>
+            <p>Move the sliders to position the spoilage mark on the fish.</p>
+            
+            <div class="slider-group">
+                <label>Left/Right (X-axis):</label>
+                <input type="range" id="posX" min="-0.5" max="0.5" step="0.001" value="0">
+            </div>
+            
+            <div class="slider-group">
+                <label>Up/Down (Y-axis):</label>
+                <input type="range" id="posY" min="-0.2" max="0.2" step="0.001" value="0">
             </div>
 
-            <div class="info-section">
-                <div class="status-card">
-                    <div id="statusBadge" class="status-badge">Loading...</div>
-                    <h2 id="fishId">WHOLE-FISH-001</h2>
-                </div>
-                <div class="status-card">
-                    <div class="metric">
-                        <span>Body Delta E (Spoilage)</span>
-                        <span id="bodyVal" class="metric-value">--</span>
-                    </div>
-                    <div class="metric">
-                        <span>Eye Delta E (Clarity)</span>
-                        <span id="eyeVal" class="metric-value">--</span>
-                    </div>
-                </div>
+            <div class="slider-group">
+                <label>Front/Back (Z-axis):</label>
+                <input type="range" id="posZ" min="-0.1" max="0.1" step="0.001" value="0.05">
+            </div>
+
+            <div class="code-output">
+                Current Position: <span class="coord-readout" id="finalCoords">data-position="0m 0m 0.05m"</span>
             </div>
         </div>
     </div>
 
     <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getDatabase, ref, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        const viewer = document.querySelector('#viewer');
+        const hotspot = document.querySelector('#tempHotspot');
+        const finalCoords = document.querySelector('#finalCoords');
 
-        const firebaseConfig = { databaseURL: "https://fish-digital-twin-default-rtdb.asia-southeast1.firebasedatabase.app" };
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+        const sliders = {
+            x: document.querySelector('#posX'),
+            y: document.querySelector('#posY'),
+            z: document.querySelector('#posZ')
+        };
 
-        function updateUI(bodyDE, eyeDE, status) {
-            document.getElementById('bodyVal').textContent = bodyDE.toFixed(2);
-            document.getElementById('eyeVal').textContent = eyeDE.toFixed(2);
-            
-            const badge = document.getElementById('statusBadge');
-            badge.textContent = status;
-            badge.className = `status-badge badge-${status.toLowerCase()}`;
-
-            const bSpot = document.getElementById('bellySpot');
-            const eSpot = document.getElementById('eyeSpot');
-
-            // Logic: Orange for Warning, Red for Critical
-            if (bodyDE > 6) {
-                bSpot.style.opacity = 0.7;
-                bSpot.style.backgroundColor = "red";
-                bSpot.style.boxShadow = "0 0 30px red";
-            } else if (bodyDE > 3.5) {
-                bSpot.style.opacity = 0.5;
-                bSpot.style.backgroundColor = "orange";
-                bSpot.style.boxShadow = "0 0 20px orange";
-            }
-
-            if (eyeDE > 10) {
-                eSpot.style.opacity = 0.7;
-                eSpot.style.backgroundColor = "red";
-                eSpot.style.boxShadow = "0 0 15px red";
-            } else if (eyeDE > 5) {
-                eSpot.style.opacity = 0.5;
-                eSpot.style.backgroundColor = "orange";
-                eSpot.style.boxShadow = "0 0 10px orange";
-            }
+        function updatePosition() {
+            const pos = `${sliders.x.value}m ${sliders.y.value}m ${sliders.z.value}m`;
+            hotspot.setAttribute('data-position', pos);
+            finalCoords.innerText = `data-position="${pos}"`;
         }
 
-        const fishRef = ref(db, `fishes/WHOLE-FISH-001`);
-        onValue(fishRef, (snapshot) => {
-            if (snapshot.exists()) {
-                const d = snapshot.val();
-                updateUI(d.bodyDeltaE_max || 0, d.eyeDeltaE_max || 0, d.spoilageStatus || 'STABLE');
-            }
-        });
+        // Listen for slider changes
+        sliders.x.addEventListener('input', updatePosition);
+        sliders.y.addEventListener('input', updatePosition);
+        sliders.z.addEventListener('input', updatePosition);
     </script>
 </body>
 </html>
