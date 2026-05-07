@@ -3,587 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fish Digital Twin - 3D Spoilage Markers</title>
-    <script type="importmap">
-    {
-        "imports": {
-            "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
-        }
-    }
-    </script>
+    <title>Fish Digital Twin - Quality System</title>
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+            font-family: 'Segoe UI', sans-serif;
+            background: #f0f2f5;
+            display: flex; align-items: center; justify-content: center; min-height: 100vh;
         }
-        
         .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            max-width: 1200px;
-            width: 100%;
-            overflow: hidden;
+            background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 900px; width: 100%; display: flex; flex-direction: column; overflow: hidden;
         }
-        
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
+        .viewer-box { width: 100%; height: 450px; background: #fff; border-bottom: 1px solid #eee; }
+        model-viewer { width: 100%; height: 100%; }
+        .info-panel { padding: 25px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .card { background: #f8f9fa; padding: 15px; border-radius: 10px; border-left: 5px solid #4a90e2; }
+        .label { font-size: 0.8em; color: #666; text-transform: uppercase; }
+        .value { font-size: 1.4em; font-weight: bold; color: #333; margin-top: 5px; }
+        .status-tag { 
+            display: inline-block; padding: 5px 15px; border-radius: 20px; 
+            font-weight: bold; font-size: 0.9em; margin-bottom: 10px;
         }
-        
-        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
-        
-        .content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            padding: 40px;
-        }
-        
-        .model-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        #fishCanvas {
-            width: 100%;
-            height: 500px;
-            border-radius: 15px;
-            background: #FFFFFF;
-            border: 2px solid #e0e0e0;
-            cursor: grab;
-        }
-        
-        #fishCanvas:active {
-            cursor: grabbing;
-        }
-        
-        .color-info {
-            margin-top: 15px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            width: 100%;
-            text-align: center;
-        }
-        
-        .color-info h4 {
-            margin-bottom: 10px;
-            color: #333;
-        }
-        
-        .color-indicators {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        
-        .indicator-box {
-            padding: 10px;
-            border-radius: 8px;
-            background: white;
-            border: 2px solid #ddd;
-        }
-        
-        .indicator-label {
-            font-size: 0.85em;
-            color: #666;
-            margin-bottom: 5px;
-        }
-        
-        .indicator-value {
-            font-weight: bold;
-            font-size: 1.1em;
-        }
-        
-        .color-scale {
-            display: flex;
-            justify-content: space-between;
-            margin: 15px 0;
-            height: 30px;
-            border-radius: 5px;
-            overflow: hidden;
-            border: 2px solid #ddd;
-        }
-        
-        .scale-segment {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.65em;
-            color: white;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-            font-weight: bold;
-        }
-        
-        .info-section {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        
-        .status-card {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            border-left: 5px solid #667eea;
-        }
-        
-        .status-badge {
-            display: inline-block;
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 1.1em;
-            margin-bottom: 15px;
-        }
-        
-        .badge-stable {
-            background: #4CAF50;
-            color: white;
-        }
-        
-        .badge-critical {
-            background: #f44336;
-            color: white;
-            animation: badgePulse 2s infinite;
-        }
-        
-        @keyframes badgePulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.8; transform: scale(1.05); }
-        }
-        
-        .metric {
-            display: flex;
-            justify-content: space-between;
-            padding: 15px 0;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        
-        .metric:last-child { border-bottom: none; }
-        
-        .metric-label {
-            font-weight: 600;
-            color: #555;
-        }
-        
-        .metric-value {
-            font-weight: bold;
-            font-size: 1.2em;
-        }
-        
-        .metric-value.critical { color: #f44336; }
-        .metric-value.good { color: #4CAF50; }
-        
-        .quality-stars {
-            color: #FFC107;
-            font-size: 1.5em;
-        }
-        
-        .alert-box {
-            background: #f8d7da;
-            border: 2px solid #f44336;
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 20px;
-        }
-        
-        .alert-box strong {
-            color: #721c24;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 40px;
-            font-size: 1.2em;
-            color: #666;
-        }
-        
-        @media (max-width: 768px) {
-            .content { grid-template-columns: 1fr; }
-            #fishCanvas { height: 400px; }
-        }
+        .critical { background: #ffeef0; color: #d63031; }
+        .stable { background: #e3fcef; color: #27ae60; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🐟 Fish Digital Twin</h1>
-            <p>Real-time Quality Monitoring - 3D Spoilage Markers</p>
+
+<div class="container">
+    <div class="viewer-box">
+        <model-viewer 
+            id="fish" 
+            src="https://hasini1992.github.io/fish-digital-twin/fish.glb" 
+            camera-controls auto-rotate shadow-intensity="1">
+        </model-viewer>
+    </div>
+    
+    <div class="info-panel">
+        <div class="card">
+            <div id="status" class="status-tag">ANALYZING...</div>
+            <div class="label">Sample ID</div>
+            <div class="value">WHOLE-FISH-001</div>
         </div>
-
-        <div id="loading" class="loading">
-            Loading fish model with spoilage markers...
-        </div>
-
-        <div id="mainContent" class="content" style="display: none;">
-            <div class="model-section">
-                <canvas id="fishCanvas"></canvas>
-                
-                <div class="color-info">
-                    <h4>🎨 3D Spoilage Markers</h4>
-                    <p style="font-size: 0.85em; color: #666; margin-bottom: 10px;">
-                        Colored markers rotate with the fish model
-                    </p>
-                    
-                    <div class="color-indicators">
-                        <div class="indicator-box">
-                            <div class="indicator-label">Body Markers</div>
-                            <div id="bodyColorName" class="indicator-value">--</div>
-                            <div style="font-size: 0.8em; color: #666; margin-top: 5px;">
-                                ΔE: <strong id="bodyDEDisplay">--</strong>
-                            </div>
-                        </div>
-                        <div class="indicator-box">
-                            <div class="indicator-label">Eye Markers</div>
-                            <div id="eyeColorName" class="indicator-value">--</div>
-                            <div style="font-size: 0.8em; color: #666; margin-top: 5px;">
-                                ΔE: <strong id="eyeDEDisplay">--</strong>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="color-scale">
-                        <div class="scale-segment" style="background: #C0C0C0;">Fresh<br>0-2</div>
-                        <div class="scale-segment" style="background: #A8A8A8;">Good<br>2-3.5</div>
-                        <div class="scale-segment" style="background: #8B7355;">Mod<br>3.5-6</div>
-                        <div class="scale-segment" style="background: #654321;">Poor<br>6-10</div>
-                        <div class="scale-segment" style="background: #8B0000;">Critical<br>10+</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="info-section">
-                <div class="status-card">
-                    <div id="statusBadge" class="status-badge">Loading...</div>
-                    <h2 id="fishId">Fish ID</h2>
-                    <p id="species"></p>
-                    <p id="location"></p>
-                    <p id="catchDate"></p>
-                </div>
-
-                <div class="status-card">
-                    <h3>Quality Analysis</h3>
-                    <div class="metric">
-                        <span class="metric-label">Quality Score</span>
-                        <span id="qualityScore" class="metric-value quality-stars"></span>
-                    </div>
-                    <div class="metric">
-                        <span class="metric-label">Body ΔE (Color Change)</span>
-                        <span id="bodyDE" class="metric-value"></span>
-                    </div>
-                    <div class="metric">
-                        <span class="metric-label">Eye ΔE (Clarity Loss)</span>
-                        <span id="eyeDE" class="metric-value"></span>
-                    </div>
-                    <div class="metric">
-                        <span class="metric-label">Thermal Variance</span>
-                        <span id="thermalVar" class="metric-value"></span>
-                    </div>
-                    <div class="metric">
-                        <span class="metric-label">Samples Analyzed</span>
-                        <span id="samples" class="metric-value"></span>
-                    </div>
-                </div>
-
-                <div id="alertBox" class="alert-box" style="display: none;">
-                    <strong>⚠️ CRITICAL SPOILAGE DETECTED</strong>
-                    <p id="alertMessage"></p>
-                </div>
-
-                <div class="status-card">
-                    <h3>Analysis Details</h3>
-                    <p id="analysisType"></p>
-                    <p id="segmentation"></p>
-                    <p id="lastAnalyzed"></p>
-                </div>
+        <div class="card" style="border-left-color: #e67e22;">
+            <div class="label">Spoilage Index (Delta E)</div>
+            <div id="deValue" class="value">--</div>
+            <div id="instruction" style="font-size: 0.75em; color: #888; margin-top: 10px;">
+                Fish color tints automatically based on spoilage levels.
             </div>
         </div>
     </div>
+</div>
 
-    <script type="module">
-        import * as THREE from 'three';
-        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-        
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getDatabase, ref, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+<script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getDatabase, ref, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
-        const firebaseConfig = {
-            databaseURL: "https://fish-digital-twin-default-rtdb.asia-southeast1.firebasedatabase.app"
-        };
+    const db = getDatabase(initializeApp({ 
+        databaseURL: "https://fish-digital-twin-default-rtdb.asia-southeast1.firebasedatabase.app" 
+    }));
 
-        const firebaseApp = initializeApp(firebaseConfig);
-        const db = getDatabase(firebaseApp);
+    async function applyFishTint(bodyDE) {
+        const viewer = document.getElementById('fish');
+        if (!viewer.model) return;
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const fishId = urlParams.get('id') || 'WHOLE-FISH-001';
-
-        // Three.js setup
-        const canvas = document.getElementById('fishCanvas');
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xFFFFFF);
+        const materials = viewer.model.materials;
         
-        const camera = new THREE.PerspectiveCamera(
-            45,
-            canvas.clientWidth / canvas.clientHeight,
-            0.1,
-            1000
-        );
-        camera.position.set(0, 1, 5);
-        
-        const renderer = new THREE.WebGLRenderer({ 
-            canvas: canvas, 
-            antialias: true 
-        });
-        renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        renderer.shadowMap.enabled = true;
-        
-        // Lights
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-        scene.add(ambientLight);
-        
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        directionalLight.position.set(5, 5, 5);
-        directionalLight.castShadow = true;
-        scene.add(directionalLight);
-        
-        // Controls
-        const controls = new OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
-        controls.autoRotate = true;
-        controls.autoRotateSpeed = 2.0;
-        
-        // Marker arrays
-        let bodyMarkers = [];
-        let eyeMarkers = [];
-        let fishModel = null;
-        
-        // Load fish model
-        const loader = new GLTFLoader();
-        loader.load(
-            'https://hasini1992.github.io/fish-digital-twin/fish.glb',
-            (gltf) => {
-                fishModel = gltf.scene;
-                fishModel.scale.set(1, 1, 1);
-                fishModel.position.set(0, 0, 0);
-                
-                scene.add(fishModel);
-                
-                // Add spoilage markers to fish body (they'll rotate with the fish!)
-                addBodyMarkers(fishModel);
-                addEyeMarkers(fishModel);
-                
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('mainContent').style.display = 'grid';
-                
-                console.log('Fish model loaded with markers');
-            },
-            (progress) => {
-                const percent = (progress.loaded / progress.total * 100).toFixed(0);
-                document.getElementById('loading').textContent = `Loading fish model... ${percent}%`;
-            },
-            (error) => {
-                console.error('Error loading fish:', error);
-                document.getElementById('loading').textContent = 'Error loading fish model';
-            }
-        );
-        
-        // Add body spoilage markers (attached to fish, so they rotate with it!)
-        function addBodyMarkers(fish) {
-            // Create semi-transparent spheres on fish body
-            const markerGeometry = new THREE.SphereGeometry(0.08, 16, 16);
-            const markerMaterial = new THREE.MeshStandardMaterial({
-                color: 0xC0C0C0,
-                transparent: true,
-                opacity: 0.6,
-                emissive: 0xC0C0C0,
-                emissiveIntensity: 0.3
-            });
-            
-            // Add markers at strategic body positions
-            const positions = [
-                { x: 0.3, y: 0.1, z: 0 },    // Center body
-                { x: 0.5, y: 0.05, z: 0.2 },  // Upper body
-                { x: 0.5, y: 0.05, z: -0.2 }, // Upper body other side
-                { x: 0.1, y: -0.05, z: 0.15 }, // Lower body
-                { x: 0.1, y: -0.05, z: -0.15 } // Lower body other side
-            ];
-            
-            positions.forEach(pos => {
-                const marker = new THREE.Mesh(markerGeometry, markerMaterial.clone());
-                marker.position.set(pos.x, pos.y, pos.z);
-                fish.add(marker); // Attach to fish! They rotate together!
-                bodyMarkers.push(marker);
-            });
-        }
-        
-        // Add eye degradation markers
-        function addEyeMarkers(fish) {
-            const eyeGeometry = new THREE.SphereGeometry(0.05, 16, 16);
-            const eyeMaterial = new THREE.MeshStandardMaterial({
-                color: 0xFFFFFF,
-                transparent: true,
-                opacity: 0.5
-            });
-            
-            // Eye positions (approximate - adjust based on your fish model)
-            const eyePositions = [
-                { x: 0.8, y: 0.15, z: 0.1 },   // Right eye
-                { x: 0.8, y: 0.15, z: -0.1 }   // Left eye
-            ];
-            
-            eyePositions.forEach(pos => {
-                const marker = new THREE.Mesh(eyeGeometry, eyeMaterial.clone());
-                marker.position.set(pos.x, pos.y, pos.z);
-                fish.add(marker); // Attach to fish!
-                eyeMarkers.push(marker);
-            });
-        }
-        
-        // Update marker colors based on ΔE
-        function updateMarkerColors(bodyDE, eyeDE) {
-            // Get colors
-            const bodyColor = getBodyColor(bodyDE);
-            const eyeColor = getEyeColor(eyeDE);
-            
-            // Update body markers
-            bodyMarkers.forEach(marker => {
-                marker.material.color.setHex(bodyColor.hex);
-                marker.material.emissive.setHex(bodyColor.hex);
-                marker.material.opacity = bodyColor.opacity;
-                marker.material.needsUpdate = true;
-            });
-            
-            // Update eye markers
-            eyeMarkers.forEach(marker => {
-                marker.material.color.setHex(eyeColor.hex);
-                marker.material.opacity = eyeColor.opacity;
-                marker.material.needsUpdate = true;
-            });
-            
-            // Update UI
-            document.getElementById('bodyColorName').textContent = bodyColor.name;
-            document.getElementById('bodyColorName').style.color = `#${bodyColor.hex.toString(16).padStart(6, '0')}`;
-            document.getElementById('eyeColorName').textContent = eyeColor.name;
-            document.getElementById('eyeColorName').style.color = `#${eyeColor.hex.toString(16).padStart(6, '0')}`;
-            
-            console.log(`Markers updated: Body=${bodyColor.name}, Eye=${eyeColor.name}`);
-        }
-        
-        function getBodyColor(deltaE) {
-            if (deltaE < 2.0) return { hex: 0xC0C0C0, name: 'Fresh Silver', opacity: 0.3 };
-            if (deltaE < 3.5) return { hex: 0xA8A8A8, name: 'Light Gray', opacity: 0.4 };
-            if (deltaE < 6.0) return { hex: 0x8B7355, name: 'Gray-Brown', opacity: 0.5 };
-            if (deltaE < 10.0) return { hex: 0x654321, name: 'Brown', opacity: 0.6 };
-            return { hex: 0x8B0000, name: 'Dark Red (SPOILED)', opacity: 0.7 };
-        }
-        
-        function getEyeColor(deltaE) {
-            if (deltaE < 5.0) return { hex: 0xFFFFFF, name: 'Clear', opacity: 0.2 };
-            if (deltaE < 10.0) return { hex: 0xD3D3D3, name: 'Slightly Cloudy', opacity: 0.4 };
-            if (deltaE < 30.0) return { hex: 0x808080, name: 'Cloudy', opacity: 0.6 };
-            return { hex: 0x505050, name: 'Opaque (Degraded)', opacity: 0.7 };
-        }
-        
-        // Animation loop
-        function animate() {
-            requestAnimationFrame(animate);
-            controls.update();
-            renderer.render(scene, camera);
-        }
-        animate();
-        
-        // Handle resize
-        window.addEventListener('resize', () => {
-            camera.aspect = canvas.clientWidth / canvas.clientHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-        });
-        
-        // Get quality stars
-        function getQualityStars(score) {
-            return '⭐'.repeat(score) + '☆'.repeat(5 - score);
+        // Define color based on spoilage
+        let tint = [1, 1, 1, 1]; // Default White (Fresh)
+        if (bodyDE > 6) {
+            tint = [0.8, 0.2, 0.2, 1]; // Deep Red (Spoiled)
+        } else if (bodyDE > 3.5) {
+            tint = [1, 0.6, 0.2, 1]; // Orange (Warning)
         }
 
-        // Load fish data
-        const fishRef = ref(db, `fishes/${fishId}`);
-        
-        onValue(fishRef, (snapshot) => {
-            if (snapshot.exists()) {
-                const data = snapshot.val();
-                
-                // Basic info
-                document.getElementById('fishId').textContent = fishId;
-                document.getElementById('species').textContent = data.species || 'Unknown';
-                document.getElementById('location').textContent = '📍 ' + (data.location || 'Unknown');
-                document.getElementById('catchDate').textContent = '📅 ' + (data.catchDate || 'Unknown');
-                
-                // Status
-                const status = data.spoilageStatus || 'UNKNOWN';
-                const statusBadge = document.getElementById('statusBadge');
-                statusBadge.textContent = status;
-                statusBadge.className = `status-badge badge-${status.toLowerCase()}`;
-                
-                // Metrics
-                const bodyDE = data.bodyDeltaE_max || 0;
-                const eyeDE = data.eyeDeltaE_max || 0;
-                const thermalVar = data.thermalVariance || 0;
-                const quality = data.qualityScore || 0;
-                const samples = data.samplesAnalyzed || 0;
-                
-                document.getElementById('qualityScore').textContent = getQualityStars(quality);
-                
-                document.getElementById('bodyDE').textContent = bodyDE.toFixed(2);
-                document.getElementById('bodyDE').className = 'metric-value ' + (bodyDE > 6.0 ? 'critical' : 'good');
-                
-                document.getElementById('eyeDE').textContent = eyeDE.toFixed(2);
-                document.getElementById('eyeDE').className = 'metric-value ' + (eyeDE > 10.0 ? 'critical' : 'good');
-                
-                document.getElementById('thermalVar').textContent = thermalVar.toFixed(1);
-                document.getElementById('samples').textContent = samples;
-                
-                document.getElementById('bodyDEDisplay').textContent = bodyDE.toFixed(2);
-                document.getElementById('eyeDEDisplay').textContent = eyeDE.toFixed(2);
-                
-                // ⭐⭐⭐ UPDATE 3D MARKERS ⭐⭐⭐
-                updateMarkerColors(bodyDE, eyeDE);
-                
-                // Alert
-                if (status === 'CRITICAL') {
-                    const alertBox = document.getElementById('alertBox');
-                    alertBox.style.display = 'block';
-                    
-                    let reasons = [];
-                    if (bodyDE > 6.0) reasons.push(`Body ΔE: ${bodyDE.toFixed(2)} (exceeds 6.0)`);
-                    if (eyeDE > 10.0) reasons.push(`Eye ΔE: ${eyeDE.toFixed(2)} (exceeds 10.0)`);
-                    if (thermalVar > 480) reasons.push(`Thermal: ${thermalVar.toFixed(1)} (exceeds 480)`);
-                    
-                    document.getElementById('alertMessage').innerHTML = reasons.join('<br>');
-                }
-                
-                // Details
-                document.getElementById('analysisType').textContent = '🔬 ' + (data.analysisType || 'Not analyzed');
-                document.getElementById('segmentation').textContent = '🎯 ' + (data.segmentationMethod || 'Unknown');
-                document.getElementById('lastAnalyzed').textContent = '🕐 ' + (data.lastAnalyzed || 'Never');
+        // Apply to the main body material
+        materials.forEach(mat => {
+            if (mat.name.toLowerCase().includes('material.001') || mat.name.toLowerCase().includes('body')) {
+                mat.pbrMetallicRoughness.setBaseColorFactor(tint);
             }
         });
-    </script>
+    }
+
+    onValue(ref(db, `fishes/WHOLE-FISH-001`), (snapshot) => {
+        if (snapshot.exists()) {
+            const data = snapshot.val();
+            const de = data.bodyDeltaE_max || 0;
+            
+            document.getElementById('deValue').textContent = de.toFixed(2);
+            const statusBox = document.getElementById('status');
+            statusBox.textContent = data.spoilageStatus;
+            statusBox.className = `status-tag ${de > 6 ? 'critical' : 'stable'}`;
+
+            applyFishTint(de);
+        }
+    });
+</script>
+
 </body>
 </html>
