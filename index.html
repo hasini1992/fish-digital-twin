@@ -1,152 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fish Digital Twin - Hotspot Quality System</title>
-    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            max-width: 1200px;
-            width: 100%;
-            overflow: hidden;
-        }
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-        .content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            padding: 30px;
-        }
-        .fish-container {
-            position: relative;
-            width: 100%;
-            height: 500px;
-            background: #fdfdfd;
-            border: 2px solid #eee;
-            border-radius: 15px;
-        }
-        model-viewer {
-            width: 100%;
-            height: 100%;
-        }
-
-        /* --- HOTSPOT STYLING --- */
-        .Hotspot {
-            background: transparent;
-            border: none;
-            pointer-events: none; /* Let clicks pass through to the model for coordinate fetching */
-        }
-        .spot-glow {
-            border-radius: 50%;
-            transition: opacity 0.5s, background-color 0.5s;
-            opacity: 0;
-            filter: blur(8px);
-        }
-        #bellySpot {
-            width: 140px;
-            height: 70px;
-            transform: translate(-50%, -50%);
-        }
-        #eyeSpot {
-            width: 35px;
-            height: 35px;
-            transform: translate(-50%, -50%);
-        }
-
-        .status-card {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            border-left: 5px solid #667eea;
-            margin-bottom: 15px;
-        }
-        .status-badge {
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        .badge-critical { background: #f44336; color: white; }
-        .badge-stable { background: #4CAF50; color: white; }
-        .metric { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #ddd; }
-        .metric-value { font-weight: bold; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>🐟 Fish Digital Twin</h1>
-            <p>Click the fish to find coordinates for the glowing spots</p>
-        </div>
-
-        <div class="content">
-            <div class="model-section">
-                <div class="fish-container">
-                    <model-viewer 
-                        id="fishModel"
-                        src="https://hasini1992.github.io/fish-digital-twin/fish.glb"
-                        auto-rotate 
-                        camera-controls
-                        shadow-intensity="1">
-                        
-                        <button class="Hotspot" slot="hotspot-belly" 
-                            data-position="0.0017m -0.046m 0.005m" 
-                            data-normal="0m -1m 0m">
-                            <div class="spot-glow" id="bellySpot"></div>
-                        </button>
-                        
-                        <button class="Hotspot" slot="hotspot-eye" 
-                            data-position="0.22m 0.04m 0.02m" 
-                            data-normal="1m 0m 0m">
-                            <div class="spot-glow" id="eyeSpot"></div>
-                        </button>
-
-                    </model-viewer>
-                </div>
-            </div>
-
-            <div class="info-section">
-                <div class="status-card">
-                    <div id="badge" class="status-badge">Loading...</div>
-                    <h2 id="fishId">WHOLE-FISH-001</h2>
-                    <div class="metric">
-                        <span>Body Delta E</span>
-                        <span id="bodyVal" class="metric-value">--</span>
-                    </div>
-                    <div class="metric">
-                        <span>Eye Delta E</span>
-                        <span id="eyeVal" class="metric-value">--</span>
-                    </div>
-                </div>
-                <div class="status-card" style="font-size: 0.85em; border-left-color: #ff9800;">
-                    <strong>Instruction:</strong> If the glow is in the wrong place, click the fish's belly/eye. 
-                    Copy the coordinates from the <strong>Browser Console (F12)</strong> and update the <code>data-position</code> in the HTML.
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script type="module">
+<script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getDatabase, ref, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
@@ -154,27 +6,41 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // --- COORDINATE FINDER TOOL ---
+        // --- IMPROVED COORDINATE FINDER ---
         const viewer = document.querySelector('#fishModel');
+        
+        // We use 'click' but specifically check the model-viewer API
         viewer.addEventListener('click', (event) => {
             const rect = viewer.getBoundingClientRect();
             const x = event.clientX - rect.left;
             const y = event.clientY - rect.top;
+            
+            // This core function finds the 3D point on the "skin" of the fish
             const hit = viewer.positionAndNormalFromPoint(x, y);
             
             if (hit) {
-                console.log("--- NEW COORDINATES ---");
-                console.log(`data-position="${hit.position.x}m ${hit.position.y}m ${hit.position.z}m"`);
-                console.log(`data-normal="${hit.normal.x}m ${hit.normal.y}m ${hit.normal.z}m"`);
-                console.log("------------------------");
+                const pos = `${hit.position.x}m ${hit.position.y}m ${hit.position.z}m`;
+                const norm = `${hit.normal.x}m ${hit.normal.y}m ${hit.normal.z}m`;
+
+                // 1. Show an alert so you can see it immediately
+                alert("COORDINATES FOUND!\n\nPos: " + pos + "\nNorm: " + norm + "\n\nCheck the console (F12) to copy/paste.");
+
+                // 2. Print to console with styling to make it stand out
+                console.log("%c --- NEW COORDINATES ---", "background: #222; color: #bada55; font-size: 15px;");
+                console.log(`data-position="${pos}"`);
+                console.log(`data-normal="${norm}"`);
+                console.log("%c ------------------------", "background: #222; color: #bada55; font-size: 15px;");
+            } else {
+                console.log("Click missed the fish. Try clicking directly on the body.");
             }
         });
 
+        // --- FIREBASE DATA LOGIC ---
         function getColor(de, type) {
             const limit = type === 'eye' ? 10 : 6;
             if (de < 2) return { color: 'transparent', opacity: 0 };
-            if (de > limit) return { color: '#ff0000', opacity: 0.7 }; // Critical Red
-            return { color: '#ffa500', opacity: 0.5 }; // Warning Orange
+            if (de > limit) return { color: '#ff0000', opacity: 0.7 }; 
+            return { color: '#ffa500', opacity: 0.5 }; 
         }
 
         const fishRef = ref(db, `fishes/WHOLE-FISH-001`);
@@ -184,14 +50,9 @@
                 const bodyDE = data.bodyDeltaE_max || 0;
                 const eyeDE = data.eyeDeltaE_max || 0;
 
-                // Update UI
                 document.getElementById('bodyVal').textContent = bodyDE.toFixed(2);
                 document.getElementById('eyeVal').textContent = eyeDE.toFixed(2);
-                const badge = document.getElementById('badge');
-                badge.textContent = data.spoilageStatus;
-                badge.className = `status-badge badge-${data.spoilageStatus.toLowerCase()}`;
-
-                // Update Glows
+                
                 const bStyle = getColor(bodyDE, 'body');
                 const eStyle = getColor(eyeDE, 'eye');
 
@@ -207,5 +68,3 @@
             }
         });
     </script>
-</body>
-</html>
