@@ -25,45 +25,62 @@
             width: 100%;
             max-width: 600px;
             border: 2px solid #3498db;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            text-align: center;
         }
 
         .code-output {
             background: #000;
             color: #00ff00;
-            padding: 10px;
+            padding: 12px;
             margin-top: 10px;
             font-family: monospace;
             border-radius: 5px;
-            word-break: break-all;
-            font-size: 0.9em;
+            text-align: left;
+            user-select: all; /* Easy to copy */
         }
 
         .fish-view {
             width: 100%;
             max-width: 600px;
-            height: 400px;
-            background: #fff;
+            height: 450px;
+            background: white;
             border-radius: 15px;
-            cursor: crosshair;
+            border: 4px solid #3498db;
         }
 
         model-viewer {
             width: 100%;
             height: 100%;
         }
+
+        button {
+            padding: 10px 20px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        button.active {
+            background: #e74c3c;
+        }
     </style>
 </head>
 <body>
 
     <div id="ui-panel">
-        <h2 style="color:#3498db">Coordinate Finder</h2>
-        <p style="font-size: 0.85em; margin-bottom: 10px;">Click anywhere on the white fish below:</p>
+        <h2>Coordinate Finder</h2>
+        <p style="margin-bottom: 15px;">1. Rotate the fish to see the spot you want.<br>
+        2. Click the button below to <b>Lock Rotation</b>.<br>
+        3. Click the fish to get coordinates.</p>
         
-        <div id="status" style="color: #f1c40f; margin-bottom: 5px;">Status: Waiting for click...</div>
+        <button id="lockBtn">🔓 ROTATION: ON</button>
         
-        <div class="code-output" id="outPos">data-position="pending..."</div>
-        <div class="code-output" id="outNorm">data-normal="pending..."</div>
+        <div class="code-output" id="outPos">data-position="Waiting for click..."</div>
+        <div class="code-output" id="outNorm">data-normal="Waiting for click..."</div>
     </div>
 
     <div class="fish-view">
@@ -71,37 +88,46 @@
             id="viewer"
             src="https://hasini1992.github.io/fish-digital-twin/fish.glb"
             camera-controls
-            touch-action="none"
             shadow-intensity="1">
         </model-viewer>
     </div>
 
     <script type="module">
         const viewer = document.querySelector('#viewer');
-        const status = document.querySelector('#status');
+        const lockBtn = document.querySelector('#lockBtn');
         const outPos = document.querySelector('#outPos');
         const outNorm = document.querySelector('#outNorm');
 
-        // We use pointerdown to catch the click before rotation starts
-        viewer.addEventListener('pointerdown', (event) => {
-            const hit = viewer.positionAndNormalFromPoint(event.clientX, event.clientY);
+        let isLocked = false;
+
+        // Toggle Rotation Lock
+        lockBtn.addEventListener('click', () => {
+            isLocked = !isLocked;
+            if (isLocked) {
+                viewer.removeAttribute('camera-controls');
+                lockBtn.innerText = "🔒 ROTATION: LOCKED";
+                lockBtn.classList.add('active');
+            } else {
+                viewer.setAttribute('camera-controls', '');
+                lockBtn.innerText = "🔓 ROTATION: ON";
+                lockBtn.classList.remove('active');
+            }
+        });
+
+        // Capture touch coordinates
+        viewer.addEventListener('mousedown', (event) => {
+            // Only capture if rotation is locked to prevent "swallowing" the click
+            if (!isLocked) return;
+
+            const rect = viewer.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            
+            const hit = viewer.positionAndNormalFromPoint(x, y);
             
             if (hit) {
-                const p = hit.position;
-                const n = hit.normal;
-                
-                // Format strings exactly for your HTML
-                const posStr = `data-position="${p.x.toFixed(4)}m ${p.y.toFixed(4)}m ${p.z.toFixed(4)}m"`;
-                const normStr = `data-normal="${n.x.toFixed(4)}m ${n.y.toFixed(4)}m ${n.z.toFixed(4)}m"`;
-
-                status.innerText = "✅ Successfully captured coordinates!";
-                status.style.color = "#2ecc71";
-                
-                outPos.innerText = posStr;
-                outNorm.innerText = normStr;
-            } else {
-                status.innerText = "❌ Missed! Click closer to the center of the fish.";
-                status.style.color = "#e74c3c";
+                outPos.innerText = `data-position="${hit.position.x}m ${hit.position.y}m ${hit.position.z}m"`;
+                outNorm.innerText = `data-normal="${hit.normal.x}m ${hit.normal.y}m ${hit.normal.z}m"`;
             }
         });
     </script>
