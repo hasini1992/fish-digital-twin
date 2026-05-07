@@ -49,21 +49,125 @@
             align-items: center;
         }
         
-        model-viewer {
+        .fish-container {
+            position: relative;
             width: 100%;
             height: 500px;
             border-radius: 15px;
-            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-            transition: filter 0.8s ease;
+            background: #FFFFFF;  /* Pure white background */
+            border: 2px solid #e0e0e0;
         }
         
-        @keyframes fishPulse {
-            0%, 100% { filter: brightness(0.5) saturate(1.3) hue-rotate(340deg) sepia(0.8); }
-            50% { filter: brightness(0.6) saturate(1.4) hue-rotate(345deg) sepia(0.9); }
+        model-viewer {
+            width: 100%;
+            height: 100%;
+            --poster-color: transparent;
         }
         
-        model-viewer.critical {
-            animation: fishPulse 2s infinite;
+        /* Colored overlay shapes for body spoilage */
+        .body-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 250px;
+            height: 150px;
+            border-radius: 50%;
+            pointer-events: none;
+            mix-blend-mode: multiply;
+            opacity: 0;
+            transition: opacity 1s ease, background-color 1s ease;
+        }
+        
+        .body-overlay.active {
+            opacity: 0.4;
+        }
+        
+        /* Colored overlay shapes for eyes */
+        .eye-overlay-left,
+        .eye-overlay-right {
+            position: absolute;
+            top: 42%;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            pointer-events: none;
+            mix-blend-mode: multiply;
+            opacity: 0;
+            transition: opacity 1s ease, background-color 1s ease;
+        }
+        
+        .eye-overlay-left {
+            left: 58%;
+        }
+        
+        .eye-overlay-right {
+            left: 62%;
+        }
+        
+        .eye-overlay-left.active,
+        .eye-overlay-right.active {
+            opacity: 0.5;
+        }
+        
+        .color-info {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .color-info h4 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .color-indicators {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .indicator-box {
+            padding: 10px;
+            border-radius: 8px;
+            background: white;
+            border: 2px solid #ddd;
+        }
+        
+        .indicator-label {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .indicator-value {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        
+        .color-scale {
+            display: flex;
+            justify-content: space-between;
+            margin: 15px 0;
+            height: 30px;
+            border-radius: 5px;
+            overflow: hidden;
+            border: 2px solid #ddd;
+        }
+        
+        .scale-segment {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65em;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            font-weight: bold;
         }
         
         .info-section {
@@ -152,7 +256,7 @@
         
         @media (max-width: 768px) {
             .content { grid-template-columns: 1fr; }
-            model-viewer { height: 400px; }
+            .fish-container { height: 400px; }
         }
     </style>
 </head>
@@ -160,7 +264,7 @@
     <div class="container">
         <div class="header">
             <h1>🐟 Fish Digital Twin</h1>
-            <p>Real-time Quality Monitoring System</p>
+            <p>Real-time Quality Monitoring - Color-Coded Spoilage Detection</p>
         </div>
 
         <div id="loading" class="loading">
@@ -169,20 +273,52 @@
 
         <div id="mainContent" class="content" style="display: none;">
             <div class="model-section">
-                <model-viewer 
-                    id="fishModel"
-                    src="https://hasini1992.github.io/fish-digital-twin/fish.glb"
-                    alt="Fish 3D Model - Quality Indicator"
-                    auto-rotate 
-                    camera-controls
-                    shadow-intensity="1"
-                    environment-image="neutral"
-                    camera-orbit="0deg 75deg 105%"
-                    exposure="1.0">
-                </model-viewer>
-                <p style="margin-top: 10px; text-align: center; color: #666;">
-                    <small>🎨 Fish color changes based on spoilage level</small>
-                </p>
+                <div class="fish-container">
+                    <model-viewer 
+                        id="fishModel"
+                        src="https://hasini1992.github.io/fish-digital-twin/fish.glb"
+                        alt="Fish 3D Model"
+                        auto-rotate 
+                        camera-controls
+                        shadow-intensity="0.5"
+                        camera-orbit="0deg 75deg 105%"
+                        exposure="1.2">
+                    </model-viewer>
+                    
+                    <!-- Colored overlays for spoilage visualization -->
+                    <div id="bodyOverlay" class="body-overlay"></div>
+                    <div id="eyeOverlayLeft" class="eye-overlay-left"></div>
+                    <div id="eyeOverlayRight" class="eye-overlay-right"></div>
+                </div>
+                
+                <div class="color-info">
+                    <h4>🎨 Spoilage Indicators</h4>
+                    
+                    <div class="color-indicators">
+                        <div class="indicator-box">
+                            <div class="indicator-label">Body Color</div>
+                            <div id="bodyColorName" class="indicator-value">--</div>
+                            <div style="font-size: 0.8em; color: #666; margin-top: 5px;">
+                                ΔE: <strong id="bodyDEDisplay">--</strong>
+                            </div>
+                        </div>
+                        <div class="indicator-box">
+                            <div class="indicator-label">Eye Clarity</div>
+                            <div id="eyeColorName" class="indicator-value">--</div>
+                            <div style="font-size: 0.8em; color: #666; margin-top: 5px;">
+                                ΔE: <strong id="eyeDEDisplay">--</strong>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="color-scale">
+                        <div class="scale-segment" style="background: #C0C0C0;">Fresh<br>0-2</div>
+                        <div class="scale-segment" style="background: #A8A8A8;">Good<br>2-3.5</div>
+                        <div class="scale-segment" style="background: #8B7355;">Mod<br>3.5-6</div>
+                        <div class="scale-segment" style="background: #654321;">Poor<br>6-10</div>
+                        <div class="scale-segment" style="background: #8B0000;">Critical<br>10+</div>
+                    </div>
+                </div>
             </div>
 
             <div class="info-section">
@@ -205,7 +341,7 @@
                         <span id="bodyDE" class="metric-value"></span>
                     </div>
                     <div class="metric">
-                        <span class="metric-label">Eye ΔE (Clarity)</span>
+                        <span class="metric-label">Eye ΔE (Clarity Loss)</span>
                         <span id="eyeDE" class="metric-value"></span>
                     </div>
                     <div class="metric">
@@ -247,34 +383,75 @@
         const urlParams = new URLSearchParams(window.location.search);
         const fishId = urlParams.get('id') || 'WHOLE-FISH-001';
 
-        // Function to update fish color based on ΔE values
-        function updateFishAppearance(bodyDE, eyeDE) {
-            const model = document.getElementById('fishModel');
-            
-            let filterValue, animationClass = '';
-            
-            console.log(`Updating fish appearance: Body ΔE=${bodyDE}, Eye ΔE=${eyeDE}`);
-            
-            if (bodyDE < 2.0) {
-                // Fresh - Bright, natural silver
-                filterValue = 'brightness(1.3) saturate(1.1) contrast(1.1)';
-            } else if (bodyDE < 3.5) {
-                // Good - Slight dulling
-                filterValue = 'brightness(1.1) saturate(1.0) sepia(0.1)';
-            } else if (bodyDE < 6.0) {
-                // Moderate - Light brown tint
-                filterValue = 'brightness(0.95) saturate(0.9) hue-rotate(25deg) sepia(0.25)';
-            } else if (bodyDE < 10.0) {
-                // Poor - Brown discoloration
-                filterValue = 'brightness(0.75) saturate(0.8) hue-rotate(35deg) sepia(0.5)';
+        // Get overlay elements
+        const bodyOverlay = document.getElementById('bodyOverlay');
+        const eyeOverlayLeft = document.getElementById('eyeOverlayLeft');
+        const eyeOverlayRight = document.getElementById('eyeOverlayRight');
+
+        // Function to get color based on Delta E
+        function getBodyColor(deltaE) {
+            if (deltaE < 2.0) {
+                return { color: '#C0C0C0', name: 'Fresh Silver', opacity: 0 };
+            } else if (deltaE < 3.5) {
+                return { color: '#A8A8A8', name: 'Light Gray', opacity: 0.2 };
+            } else if (deltaE < 6.0) {
+                return { color: '#8B7355', name: 'Gray-Brown', opacity: 0.3 };
+            } else if (deltaE < 10.0) {
+                return { color: '#654321', name: 'Brown', opacity: 0.4 };
             } else {
-                // CRITICAL - Dark reddish-brown (spoiled)
-                filterValue = 'brightness(0.5) saturate(1.3) hue-rotate(340deg) sepia(0.8)';
-                animationClass = 'critical';
+                return { color: '#8B0000', name: 'Dark Red (SPOILED)', opacity: 0.5 };
             }
-            
-            model.style.filter = filterValue;
-            model.className = animationClass;
+        }
+
+        function getEyeColor(deltaE) {
+            if (deltaE < 5.0) {
+                return { color: '#FFFFFF', name: 'Clear', opacity: 0 };
+            } else if (deltaE < 10.0) {
+                return { color: '#D3D3D3', name: 'Slightly Cloudy', opacity: 0.3 };
+            } else if (deltaE < 30.0) {
+                return { color: '#808080', name: 'Cloudy', opacity: 0.4 };
+            } else {
+                return { color: '#505050', name: 'Opaque (Degraded)', opacity: 0.6 };
+            }
+        }
+
+        // Function to update colored overlays
+        function updateFishOverlays(bodyDE, eyeDE) {
+            const bodyColor = getBodyColor(bodyDE);
+            const eyeColor = getEyeColor(eyeDE);
+
+            // Update body overlay
+            bodyOverlay.style.backgroundColor = bodyColor.color;
+            bodyOverlay.style.opacity = bodyColor.opacity;
+            if (bodyColor.opacity > 0) {
+                bodyOverlay.classList.add('active');
+            } else {
+                bodyOverlay.classList.remove('active');
+            }
+
+            // Update eye overlays
+            eyeOverlayLeft.style.backgroundColor = eyeColor.color;
+            eyeOverlayRight.style.backgroundColor = eyeColor.color;
+            eyeOverlayLeft.style.opacity = eyeColor.opacity;
+            eyeOverlayRight.style.opacity = eyeColor.opacity;
+            if (eyeColor.opacity > 0) {
+                eyeOverlayLeft.classList.add('active');
+                eyeOverlayRight.classList.add('active');
+            } else {
+                eyeOverlayLeft.classList.remove('active');
+                eyeOverlayRight.classList.remove('active');
+            }
+
+            // Update labels
+            document.getElementById('bodyColorName').textContent = bodyColor.name;
+            document.getElementById('bodyColorName').style.color = bodyColor.color;
+            document.getElementById('eyeColorName').textContent = eyeColor.name;
+            document.getElementById('eyeColorName').style.color = eyeColor.color;
+
+            document.getElementById('bodyDEDisplay').textContent = bodyDE.toFixed(2);
+            document.getElementById('eyeDEDisplay').textContent = eyeDE.toFixed(2);
+
+            console.log(`Overlays updated: Body=${bodyColor.name} (${bodyColor.color}), Eye=${eyeColor.name} (${eyeColor.color})`);
         }
 
         // Get quality stars
@@ -282,7 +459,7 @@
             return '⭐'.repeat(score) + '☆'.repeat(5 - score);
         }
 
-        // Load fish data with real-time updates (no F5 needed!)
+        // Load fish data
         const fishRef = ref(db, `fishes/${fishId}`);
         
         onValue(fishRef, (snapshot) => {
@@ -324,18 +501,18 @@
                 document.getElementById('thermalVar').textContent = thermalVar.toFixed(1);
                 document.getElementById('samples').textContent = samples;
                 
-                // === CRITICAL: Update fish visual based on ΔE ===
-                updateFishAppearance(bodyDE, eyeDE);
+                // ⭐⭐⭐ UPDATE COLORED OVERLAYS ON FISH ⭐⭐⭐
+                updateFishOverlays(bodyDE, eyeDE);
                 
-                // Alert box for critical fish
+                // Alert box
                 if (status === 'CRITICAL') {
                     const alertBox = document.getElementById('alertBox');
                     alertBox.style.display = 'block';
                     
                     let reasons = [];
-                    if (bodyDE > 6.0) reasons.push(`Body ΔE: ${bodyDE.toFixed(2)} (exceeds 6.0 threshold)`);
-                    if (eyeDE > 10.0) reasons.push(`Eye ΔE: ${eyeDE.toFixed(2)} (exceeds 10.0 threshold)`);
-                    if (thermalVar > 480) reasons.push(`Thermal variance: ${thermalVar.toFixed(1)} (exceeds 480 threshold)`);
+                    if (bodyDE > 6.0) reasons.push(`Body ΔE: ${bodyDE.toFixed(2)} (exceeds 6.0)`);
+                    if (eyeDE > 10.0) reasons.push(`Eye ΔE: ${eyeDE.toFixed(2)} (exceeds 10.0)`);
+                    if (thermalVar > 480) reasons.push(`Thermal: ${thermalVar.toFixed(1)} (exceeds 480)`);
                     
                     document.getElementById('alertMessage').innerHTML = reasons.join('<br>');
                 }
@@ -343,10 +520,10 @@
                 // Analysis details
                 document.getElementById('analysisType').textContent = '🔬 ' + (data.analysisType || 'Not analyzed');
                 document.getElementById('segmentation').textContent = '🎯 ' + (data.segmentationMethod || 'Unknown');
-                document.getElementById('lastAnalyzed').textContent = '🕐 Last analyzed: ' + (data.lastAnalyzed || 'Never');
+                document.getElementById('lastAnalyzed').textContent = '🕐 ' + (data.lastAnalyzed || 'Never');
                 
             } else {
-                document.getElementById('loading').textContent = '❌ Fish not found in database';
+                document.getElementById('loading').textContent = '❌ Fish not found';
                 document.getElementById('loading').style.display = 'block';
             }
         });
