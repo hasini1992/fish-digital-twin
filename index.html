@@ -32,7 +32,6 @@
         }
         .header h1 { font-size: 2.5em; margin-bottom: 10px; }
         
-        /* THE TEST BUTTON */
         #forceTestBtn {
             margin-top: 20px;
             padding: 15px 30px;
@@ -176,7 +175,7 @@
         <div class="header">
             <h1>🐟 Fish Digital Twin</h1>
             <p>Real-time Quality Monitoring - Color-Coded Spoilage Detection</p>
-            <button id="forceTestBtn">🚨 FORCE COLOR TEST: RED BODY, BLUE EYES 🚨</button>
+            <button id="forceTestBtn">🚨 NUKE TEST: TURN EVERYTHING RED 🚨</button>
         </div>
 
         <div id="loading" class="loading">Loading fish data...</div>
@@ -214,14 +213,6 @@
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="color-scale">
-                        <div class="scale-segment" style="background: #C0C0C0;">Fresh<br>0-2</div>
-                        <div class="scale-segment" style="background: #A8A8A8;">Good<br>2-3.5</div>
-                        <div class="scale-segment" style="background: #8B7355;">Mod<br>3.5-6</div>
-                        <div class="scale-segment" style="background: #654321;">Poor<br>6-10</div>
-                        <div class="scale-segment" style="background: #8B0000;">Critical<br>10+</div>
-                    </div>
                 </div>
             </div>
 
@@ -230,8 +221,6 @@
                     <div id="statusBadge" class="status-badge">Loading...</div>
                     <h2 id="fishId">Fish ID</h2>
                     <p id="species"></p>
-                    <p id="location"></p>
-                    <p id="catchDate"></p>
                 </div>
 
                 <div class="status-card">
@@ -248,26 +237,11 @@
                         <span class="metric-label">Eye ΔE (Clarity Loss)</span>
                         <span id="eyeDE" class="metric-value"></span>
                     </div>
-                    <div class="metric">
-                        <span class="metric-label">Thermal Variance</span>
-                        <span id="thermalVar" class="metric-value"></span>
-                    </div>
-                    <div class="metric">
-                        <span class="metric-label">Samples Analyzed</span>
-                        <span id="samples" class="metric-value"></span>
-                    </div>
                 </div>
 
                 <div id="alertBox" class="alert-box" style="display: none;">
                     <strong>⚠️ CRITICAL SPOILAGE DETECTED</strong>
                     <p id="alertMessage"></p>
-                </div>
-
-                <div class="status-card">
-                    <h3>Analysis Details</h3>
-                    <p id="analysisType"></p>
-                    <p id="segmentation"></p>
-                    <p id="lastAnalyzed"></p>
                 </div>
             </div>
         </div>
@@ -277,162 +251,52 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getDatabase, ref, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
-        const firebaseConfig = {
-            databaseURL: "https://fish-digital-twin-default-rtdb.asia-southeast1.firebasedatabase.app"
-        };
-
+        const firebaseConfig = { databaseURL: "https://fish-digital-twin-default-rtdb.asia-southeast1.firebasedatabase.app" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const fishId = urlParams.get('id') || 'WHOLE-FISH-001';
-
-        // --- HARDCODE COLOR OVERRIDE BUTTON ---
+        // --- THE NUKE TEST ---
         document.getElementById('forceTestBtn').addEventListener('click', async () => {
             const modelViewer = document.getElementById('fishModel');
-            if (!modelViewer.model) {
-                alert("Please wait for the fish to load first!");
-                return;
-            }
-            const materials = modelViewer.model.materials;
-            for (const material of materials) {
-                const matName = material.name.toLowerCase();
-                if (matName === 'material.001') {
-                    if (material.pbrMetallicRoughness.baseColorTexture) {
-                         material.pbrMetallicRoughness.baseColorTexture.setTexture(null);
-                    }
-                    material.pbrMetallicRoughness.setBaseColorFactor([1, 0, 0, 1]); // PURE RED
+            if (!modelViewer.model) return alert("Wait for model to load!");
+
+            let count = 0;
+            // Target EVERY single material inside the 3D file
+            for (const material of modelViewer.model.materials) {
+                // Strip texture
+                if (material.pbrMetallicRoughness.baseColorTexture) {
+                    try { material.pbrMetallicRoughness.baseColorTexture.setTexture(null); } catch(e){}
                 }
-                if (matName === 'material.002') {
-                    if (material.pbrMetallicRoughness.baseColorTexture) {
-                         material.pbrMetallicRoughness.baseColorTexture.setTexture(null);
-                    }
-                    material.pbrMetallicRoughness.setBaseColorFactor([0, 0, 1, 1]); // PURE BLUE
-                }
+                // Apply pure Red
+                material.pbrMetallicRoughness.setBaseColorFactor([1, 0, 0, 1]);
+                count++;
             }
-            alert("Test Complete! \n\nIf the fish did NOT turn Red and Blue just now, your 3D file has 'Vertex Colors' baked into it. You will need to export a new .glb file without vertex colors.");
+            alert(`Just attempted to paint all ${count} materials RED. \n\nDid the fish change color?`);
         });
 
-        function hexToRgbaArray(hex, alpha = 1) {
-            hex = hex.replace('#', '');
-            const r = parseInt(hex.substring(0, 2), 16) / 255;
-            const g = parseInt(hex.substring(2, 4), 16) / 255;
-            const b = parseInt(hex.substring(4, 6), 16) / 255;
-            return [r, g, b, alpha];
-        }
-
-        function getBodyColor(deltaE) {
-            if (deltaE < 2.0) return { color: '#C0C0C0', name: 'Fresh Silver', opacity: 0 };
-            if (deltaE < 3.5) return { color: '#A8A8A8', name: 'Light Gray', opacity: 0.2 };
-            if (deltaE < 6.0) return { color: '#8B7355', name: 'Gray-Brown', opacity: 0.3 };
-            if (deltaE < 10.0) return { color: '#654321', name: 'Brown', opacity: 0.4 };
-            return { color: '#8B0000', name: 'Dark Red (SPOILED)', opacity: 0.5 };
-        }
-
-        function getEyeColor(deltaE) {
-            if (deltaE < 5.0) return { color: '#FFFFFF', name: 'Clear', opacity: 0 };
-            if (deltaE < 10.0) return { color: '#D3D3D3', name: 'Slightly Cloudy', opacity: 0.3 };
-            if (deltaE < 30.0) return { color: '#808080', name: 'Cloudy', opacity: 0.4 };
-            return { color: '#505050', name: 'Opaque (Degraded)', opacity: 0.6 };
-        }
-
-        async function updateFishOverlays(bodyDE, eyeDE) {
-            const bodyColorData = getBodyColor(bodyDE);
-            const eyeColorData = getEyeColor(eyeDE);
-
-            document.getElementById('bodyColorName').textContent = bodyColorData.name;
-            document.getElementById('bodyColorName').style.color = bodyColorData.color;
-            document.getElementById('eyeColorName').textContent = eyeColorData.name;
-            document.getElementById('eyeColorName').style.color = eyeColorData.color;
-            document.getElementById('bodyDEDisplay').textContent = bodyDE.toFixed(2);
-            document.getElementById('eyeDEDisplay').textContent = eyeDE.toFixed(2);
-
-            const modelViewer = document.getElementById('fishModel');
-            if (!modelViewer.model) {
-                await new Promise(resolve => {
-                    modelViewer.addEventListener('load', resolve, { once: true });
-                });
-            }
-
-            const getWebGLColor = (colorData) => {
-                if (colorData.opacity === 0) return [1, 1, 1, 1]; 
-                return hexToRgbaArray(colorData.color, 1);
-            };
-
-            const bodyRgba = getWebGLColor(bodyColorData);
-            const eyeRgba = getWebGLColor(eyeColorData);
-
-            for (const material of modelViewer.model.materials) {
-                const matName = material.name.toLowerCase();
-                
-                if (matName === 'material.001') {
-                    if (material.pbrMetallicRoughness.baseColorTexture) {
-                         material.pbrMetallicRoughness.baseColorTexture.setTexture(null);
-                    }
-                    material.pbrMetallicRoughness.setBaseColorFactor(bodyRgba);
-                }
-                
-                if (matName === 'material.002') {
-                    if (material.pbrMetallicRoughness.baseColorTexture) {
-                         material.pbrMetallicRoughness.baseColorTexture.setTexture(null);
-                    }
-                    material.pbrMetallicRoughness.setBaseColorFactor(eyeRgba);
-                }
-            }
-        }
-
-        const fishRef = ref(db, `fishes/${fishId}`);
-        
+        // Firebase logic
+        const fishRef = ref(db, `fishes/WHOLE-FISH-001`);
         onValue(fishRef, (snapshot) => {
             document.getElementById('loading').style.display = 'none';
             if (snapshot.exists()) {
                 const data = snapshot.val();
                 document.getElementById('mainContent').style.display = 'grid';
-                
-                document.getElementById('fishId').textContent = fishId;
+                document.getElementById('fishId').textContent = 'WHOLE-FISH-001';
                 document.getElementById('species').textContent = data.species || 'Unknown Species';
-                document.getElementById('location').textContent = '📍 ' + (data.location || 'Unknown');
-                document.getElementById('catchDate').textContent = '📅 Caught: ' + (data.catchDate || 'Unknown');
                 
-                const status = data.spoilageStatus || 'UNKNOWN';
-                const statusBadge = document.getElementById('statusBadge');
-                statusBadge.textContent = status;
-                statusBadge.className = `status-badge badge-${status.toLowerCase()}`;
+                document.getElementById('statusBadge').textContent = data.spoilageStatus || 'UNKNOWN';
+                document.getElementById('statusBadge').className = `status-badge badge-${(data.spoilageStatus || 'UNKNOWN').toLowerCase()}`;
                 
                 const bodyDE = data.bodyDeltaE_max || 0;
                 const eyeDE = data.eyeDeltaE_max || 0;
-                const thermalVar = data.thermalVariance || 0;
                 
-                document.getElementById('qualityScore').textContent = '⭐'.repeat(data.qualityScore || 0) + '☆'.repeat(5 - (data.qualityScore || 0));
+                document.getElementById('bodyDE').textContent = bodyDE.toFixed(2);
+                document.getElementById('eyeDE').textContent = eyeDE.toFixed(2);
                 
-                const bodyDEElement = document.getElementById('bodyDE');
-                bodyDEElement.textContent = bodyDE.toFixed(2);
-                bodyDEElement.className = 'metric-value ' + (bodyDE > 6.0 ? 'critical' : 'good');
-                
-                const eyeDEElement = document.getElementById('eyeDE');
-                eyeDEElement.textContent = eyeDE.toFixed(2);
-                eyeDEElement.className = 'metric-value ' + (eyeDE > 10.0 ? 'critical' : 'good');
-                
-                document.getElementById('thermalVar').textContent = thermalVar.toFixed(1);
-                document.getElementById('samples').textContent = data.samplesAnalyzed || 0;
-                
-                updateFishOverlays(bodyDE, eyeDE);
-                
-                if (status === 'CRITICAL') {
-                    const alertBox = document.getElementById('alertBox');
-                    alertBox.style.display = 'block';
-                    let reasons = [];
-                    if (bodyDE > 6.0) reasons.push(`Body ΔE: ${bodyDE.toFixed(2)} (exceeds 6.0)`);
-                    if (eyeDE > 10.0) reasons.push(`Eye ΔE: ${eyeDE.toFixed(2)} (exceeds 10.0)`);
-                    if (thermalVar > 480) reasons.push(`Thermal: ${thermalVar.toFixed(1)} (exceeds 480)`);
-                    document.getElementById('alertMessage').innerHTML = reasons.join('<br>');
-                } else {
-                    document.getElementById('alertBox').style.display = 'none';
+                if (data.spoilageStatus === 'CRITICAL') {
+                    document.getElementById('alertBox').style.display = 'block';
+                    document.getElementById('alertMessage').innerHTML = `Body ΔE: ${bodyDE.toFixed(2)} <br> Eye ΔE: ${eyeDE.toFixed(2)}`;
                 }
-                
-                document.getElementById('analysisType').textContent = '🔬 ' + (data.analysisType || 'Not analyzed');
-                document.getElementById('segmentation').textContent = '🎯 ' + (data.segmentationMethod || 'Unknown');
-                document.getElementById('lastAnalyzed').textContent = '🕐 ' + (data.lastAnalyzed || 'Never');
             }
         });
     </script>
