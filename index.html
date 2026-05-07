@@ -73,10 +73,7 @@
             text-align: center;
         }
         
-        .color-info h4 {
-            margin-bottom: 10px;
-            color: #333;
-        }
+        .color-info h4 { margin-bottom: 10px; color: #333; }
         
         .color-indicators {
             display: grid;
@@ -92,16 +89,8 @@
             border: 2px solid #ddd;
         }
         
-        .indicator-label {
-            font-size: 0.85em;
-            color: #666;
-            margin-bottom: 5px;
-        }
-        
-        .indicator-value {
-            font-weight: bold;
-            font-size: 1.1em;
-        }
+        .indicator-label { font-size: 0.85em; color: #666; margin-bottom: 5px; }
+        .indicator-value { font-weight: bold; font-size: 1.1em; }
         
         .color-scale {
             display: flex;
@@ -352,6 +341,7 @@
             const materials = modelViewer.model.materials;
 
             const getWebGLColor = (colorData) => {
+                // If it's completely fresh, apply normal white light
                 if (colorData.opacity === 0) return [1, 1, 1, 1]; 
                 return hexToRgbaArray(colorData.color, 1);
             };
@@ -359,17 +349,23 @@
             const bodyRgba = getWebGLColor(bodyColorData);
             const eyeRgba = getWebGLColor(eyeColorData);
 
-            // ⭐ WE ARE APPLYING YOUR EXACT MATERIAL NAMES HERE ⭐
+            // Apply colors and remove blocking textures
             for (const material of materials) {
                 const matName = material.name.toLowerCase();
                 
-                // Assuming Material.001 is the main body
                 if (matName === 'material.001') {
+                    // Strip the base image texture so the color shows through
+                    if (material.pbrMetallicRoughness.baseColorTexture) {
+                         material.pbrMetallicRoughness.baseColorTexture.setTexture(null);
+                    }
                     material.pbrMetallicRoughness.setBaseColorFactor(bodyRgba);
                 }
                 
-                // Assuming Material.002 is the eyes
                 if (matName === 'material.002') {
+                    // Strip the base image texture so the color shows through
+                    if (material.pbrMetallicRoughness.baseColorTexture) {
+                         material.pbrMetallicRoughness.baseColorTexture.setTexture(null);
+                    }
                     material.pbrMetallicRoughness.setBaseColorFactor(eyeRgba);
                 }
             }
