@@ -7,7 +7,6 @@
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -17,7 +16,6 @@
             justify-content: center;
             padding: 20px;
         }
-        
         .container {
             background: white;
             border-radius: 20px;
@@ -26,29 +24,41 @@
             width: 100%;
             overflow: hidden;
         }
-        
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 30px;
             text-align: center;
         }
-        
         .header h1 { font-size: 2.5em; margin-bottom: 10px; }
         
+        /* THE TEST BUTTON */
+        #forceTestBtn {
+            margin-top: 20px;
+            padding: 15px 30px;
+            background: #ff4757;
+            color: white;
+            border: 2px solid white;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+        }
+        #forceTestBtn:active { transform: scale(0.95); }
+
         .content {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 30px;
             padding: 40px;
         }
-        
         .model-section {
             display: flex;
             flex-direction: column;
             align-items: center;
         }
-        
         .fish-container {
             position: relative;
             width: 100%;
@@ -57,13 +67,11 @@
             background: #FFFFFF;
             border: 2px solid #e0e0e0;
         }
-        
         model-viewer {
             width: 100%;
             height: 100%;
             --poster-color: transparent;
         }
-        
         .color-info {
             margin-top: 15px;
             padding: 15px;
@@ -72,26 +80,21 @@
             width: 100%;
             text-align: center;
         }
-        
         .color-info h4 { margin-bottom: 10px; color: #333; }
-        
         .color-indicators {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
             margin-top: 15px;
         }
-        
         .indicator-box {
             padding: 10px;
             border-radius: 8px;
             background: white;
             border: 2px solid #ddd;
         }
-        
         .indicator-label { font-size: 0.85em; color: #666; margin-bottom: 5px; }
         .indicator-value { font-weight: bold; font-size: 1.1em; }
-        
         .color-scale {
             display: flex;
             justify-content: space-between;
@@ -101,7 +104,6 @@
             overflow: hidden;
             border: 2px solid #ddd;
         }
-        
         .scale-segment {
             flex: 1;
             display: flex;
@@ -112,20 +114,17 @@
             text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
             font-weight: bold;
         }
-        
         .info-section {
             display: flex;
             flex-direction: column;
             gap: 20px;
         }
-        
         .status-card {
             background: #f8f9fa;
             padding: 20px;
             border-radius: 10px;
             border-left: 5px solid #667eea;
         }
-        
         .status-badge {
             display: inline-block;
             padding: 8px 20px;
@@ -134,30 +133,24 @@
             font-size: 1.1em;
             margin-bottom: 15px;
         }
-        
         .badge-stable { background: #4CAF50; color: white; }
         .badge-critical { background: #f44336; color: white; animation: badgePulse 2s infinite; }
-        
         @keyframes badgePulse {
             0%, 100% { opacity: 1; transform: scale(1); }
             50% { opacity: 0.8; transform: scale(1.05); }
         }
-        
         .metric {
             display: flex;
             justify-content: space-between;
             padding: 15px 0;
             border-bottom: 1px solid #e0e0e0;
         }
-        
         .metric:last-child { border-bottom: none; }
         .metric-label { font-weight: 600; color: #555; }
         .metric-value { font-weight: bold; font-size: 1.2em; }
         .metric-value.critical { color: #f44336; }
         .metric-value.good { color: #4CAF50; }
-        
         .quality-stars { color: #FFC107; font-size: 1.5em; }
-        
         .alert-box {
             background: #f8d7da;
             border: 2px solid #f44336;
@@ -165,16 +158,13 @@
             padding: 15px;
             margin-top: 20px;
         }
-        
         .alert-box strong { color: #721c24; }
-        
         .loading {
             text-align: center;
             padding: 40px;
             font-size: 1.2em;
             color: #666;
         }
-        
         @media (max-width: 768px) {
             .content { grid-template-columns: 1fr; }
             .fish-container { height: 400px; }
@@ -186,6 +176,7 @@
         <div class="header">
             <h1>🐟 Fish Digital Twin</h1>
             <p>Real-time Quality Monitoring - Color-Coded Spoilage Detection</p>
+            <button id="forceTestBtn">🚨 FORCE COLOR TEST: RED BODY, BLUE EYES 🚨</button>
         </div>
 
         <div id="loading" class="loading">Loading fish data...</div>
@@ -296,6 +287,32 @@
         const urlParams = new URLSearchParams(window.location.search);
         const fishId = urlParams.get('id') || 'WHOLE-FISH-001';
 
+        // --- HARDCODE COLOR OVERRIDE BUTTON ---
+        document.getElementById('forceTestBtn').addEventListener('click', async () => {
+            const modelViewer = document.getElementById('fishModel');
+            if (!modelViewer.model) {
+                alert("Please wait for the fish to load first!");
+                return;
+            }
+            const materials = modelViewer.model.materials;
+            for (const material of materials) {
+                const matName = material.name.toLowerCase();
+                if (matName === 'material.001') {
+                    if (material.pbrMetallicRoughness.baseColorTexture) {
+                         material.pbrMetallicRoughness.baseColorTexture.setTexture(null);
+                    }
+                    material.pbrMetallicRoughness.setBaseColorFactor([1, 0, 0, 1]); // PURE RED
+                }
+                if (matName === 'material.002') {
+                    if (material.pbrMetallicRoughness.baseColorTexture) {
+                         material.pbrMetallicRoughness.baseColorTexture.setTexture(null);
+                    }
+                    material.pbrMetallicRoughness.setBaseColorFactor([0, 0, 1, 1]); // PURE BLUE
+                }
+            }
+            alert("Test Complete! \n\nIf the fish did NOT turn Red and Blue just now, your 3D file has 'Vertex Colors' baked into it. You will need to export a new .glb file without vertex colors.");
+        });
+
         function hexToRgbaArray(hex, alpha = 1) {
             hex = hex.replace('#', '');
             const r = parseInt(hex.substring(0, 2), 16) / 255;
@@ -331,17 +348,13 @@
             document.getElementById('eyeDEDisplay').textContent = eyeDE.toFixed(2);
 
             const modelViewer = document.getElementById('fishModel');
-            
             if (!modelViewer.model) {
                 await new Promise(resolve => {
                     modelViewer.addEventListener('load', resolve, { once: true });
                 });
             }
 
-            const materials = modelViewer.model.materials;
-
             const getWebGLColor = (colorData) => {
-                // If it's completely fresh, apply normal white light
                 if (colorData.opacity === 0) return [1, 1, 1, 1]; 
                 return hexToRgbaArray(colorData.color, 1);
             };
@@ -349,12 +362,10 @@
             const bodyRgba = getWebGLColor(bodyColorData);
             const eyeRgba = getWebGLColor(eyeColorData);
 
-            // Apply colors and remove blocking textures
-            for (const material of materials) {
+            for (const material of modelViewer.model.materials) {
                 const matName = material.name.toLowerCase();
                 
-                if (matName === 'material.003') {
-                    // Strip the base image texture so the color shows through
+                if (matName === 'material.001') {
                     if (material.pbrMetallicRoughness.baseColorTexture) {
                          material.pbrMetallicRoughness.baseColorTexture.setTexture(null);
                     }
@@ -362,7 +373,6 @@
                 }
                 
                 if (matName === 'material.002') {
-                    // Strip the base image texture so the color shows through
                     if (material.pbrMetallicRoughness.baseColorTexture) {
                          material.pbrMetallicRoughness.baseColorTexture.setTexture(null);
                     }
