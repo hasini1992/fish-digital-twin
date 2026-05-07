@@ -18,7 +18,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
-            font-family: 'Inter', -apple-system, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: var(--bg);
             color: var(--text);
             height: 100vh;
@@ -29,13 +29,13 @@
 
         .dashboard {
             width: 95vw;
-            max-width: 1200px;
-            height: 85vh;
+            max-width: 1400px;
+            height: 90vh;
             background: var(--card-bg);
             border-radius: 24px;
             border: 1px solid #334155;
             display: grid;
-            grid-template-rows: 80px 1fr;
+            grid-template-rows: 100px 1fr;
             overflow: hidden;
             box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
         }
@@ -46,32 +46,33 @@
             border-bottom: 2px solid var(--accent);
             display: flex;
             align-items: center;
-            padding: 0 40px;
+            padding: 0 50px;
             justify-content: space-between;
         }
 
         .header h1 {
-            font-size: 1.5rem;
-            letter-spacing: 2px;
+            font-size: 2rem;
+            letter-spacing: 3px;
             text-transform: uppercase;
             color: var(--accent);
+            font-weight: 700;
         }
 
         .status-pill {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid var(--critical);
+            background: rgba(239, 68, 68, 0.15);
+            border: 2px solid var(--critical);
             color: var(--critical);
-            padding: 6px 20px;
+            padding: 12px 30px;
             border-radius: 50px;
             font-weight: bold;
-            font-size: 0.9rem;
+            font-size: 1.1rem;
             animation: pulse 2s infinite;
+            letter-spacing: 1px;
         }
 
         @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
         }
 
         /* MAIN CONTENT */
@@ -97,34 +98,37 @@
 
         .overlay-label {
             position: absolute;
-            bottom: 20px;
-            left: 20px;
-            font-size: 0.7rem;
+            bottom: 25px;
+            left: 25px;
+            font-size: 0.9rem;
             color: var(--muted);
             text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         /* RIGHT SIDE: DATA */
         .data-panel {
             background: var(--card-bg);
-            padding: 40px;
+            padding: 45px;
             display: flex;
             flex-direction: column;
-            gap: 30px;
+            gap: 35px;
         }
 
         .section-title {
-            font-size: 0.75rem;
+            font-size: 0.95rem;
             color: var(--accent);
             text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 15px;
+            letter-spacing: 1.5px;
+            margin-bottom: 18px;
+            font-weight: 600;
         }
 
         /* RANKING STARS */
         .stars {
-            font-size: 2rem;
-            margin-bottom: 5px;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            letter-spacing: 3px;
         }
         .star-on { color: #fbbf24; }
         .star-off { color: #334155; }
@@ -133,7 +137,7 @@
         .metric-group {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 18px;
         }
 
         .metric-item {
@@ -141,48 +145,71 @@
             justify-content: space-between;
             align-items: center;
             background: #0f172a;
-            padding: 15px;
+            padding: 20px 25px;
             border-radius: 12px;
+            border: 1px solid #334155;
         }
 
-        .metric-label { font-size: 0.8rem; color: var(--muted); }
-        .metric-value { font-family: 'Courier New', monospace; font-weight: bold; font-size: 1.2rem; color: var(--critical); }
+        .metric-label { 
+            font-size: 1rem; 
+            color: var(--muted);
+            letter-spacing: 0.5px;
+        }
+        
+        .metric-value { 
+            font-family: 'Courier New', monospace; 
+            font-weight: bold; 
+            font-size: 1.6rem; 
+            color: var(--critical);
+        }
 
         /* DECISION LOGIC */
         .decision-list {
             list-style: none;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
         }
 
         .decision-item {
-            padding: 12px 20px;
-            border-radius: 8px;
+            padding: 18px 25px;
+            border-radius: 10px;
             background: #0f172a;
-            border: 1px solid #334155;
+            border: 2px solid #334155;
             display: flex;
             justify-content: space-between;
             align-items: center;
             color: var(--muted);
+            font-size: 1.05rem;
+            font-weight: 500;
         }
 
         .decision-item.active {
             border-color: var(--critical);
-            background: rgba(239, 68, 68, 0.05);
+            background: rgba(239, 68, 68, 0.08);
             color: var(--text);
+            font-weight: 600;
         }
 
         .check-mark {
             color: var(--critical);
             font-weight: bold;
+            font-size: 1.3rem;
         }
 
         .footer-note {
             margin-top: auto;
-            font-size: 0.75rem;
+            font-size: 0.9rem;
             color: var(--muted);
-            line-height: 1.4;
+            line-height: 1.6;
+            padding: 20px;
+            background: #0f172a;
+            border-radius: 10px;
+            border: 1px solid #334155;
+        }
+
+        .footer-note b {
+            color: var(--accent);
         }
     </style>
 </head>
@@ -190,8 +217,8 @@
 
 <div class="dashboard">
     <header class="header">
-        <h1>Fish Digital Twin</h1>
-        <div class="status-pill">STATUS: CRITICAL</div>
+        <h1>🐟 Fish Digital Twin</h1>
+        <div class="status-pill" id="statusPill">STATUS: CRITICAL</div>
     </header>
 
     <main class="main">
@@ -199,52 +226,57 @@
             <model-viewer 
                 id="fishModel"
                 src="https://hasini1992.github.io/fish-digital-twin/fish.glb"
+                alt="Fish 3D Model"
                 auto-rotate 
                 camera-controls 
                 shadow-intensity="1"
-                exposure="1.2">
+                camera-orbit="0deg 75deg 105%"
+                exposure="1.2"
+                environment-image="neutral">
             </model-viewer>
-            <div class="overlay-label">3D Rendering: Whole Fish Experimental Sample</div>
+            <div class="overlay-label">3D Model: Whole Fish Experimental Sample</div>
         </section>
 
         <section class="data-panel">
             <div>
                 <p class="section-title">Quality Ranking</p>
-                <div class="stars">
+                <div class="stars" id="qualityStars">
                     <span class="star-on">★</span><span class="star-off">★</span><span class="star-off">★</span><span class="star-off">★</span><span class="star-off">★</span>
                 </div>
-                <p style="font-size: 0.8rem; color: var(--muted);">Confidence Index: 94.2%</p>
             </div>
 
             <div>
                 <p class="section-title">Spectral Analysis Metrics</p>
                 <div class="metric-group">
                     <div class="metric-item">
-                        <span class="metric-label">BODY ΔE MAX</span>
+                        <span class="metric-label">BODY ΔE (Color Change)</span>
                         <span class="metric-value" id="bodyVal">18.49</span>
                     </div>
                     <div class="metric-item">
-                        <span class="metric-label">EYE ΔE MAX</span>
+                        <span class="metric-label">EYE ΔE (Clarity Loss)</span>
                         <span class="metric-value" id="eyeVal">54.18</span>
                     </div>
                     <div class="metric-item">
-                        <span class="metric-label">PEAK VARIANCE</span>
+                        <span class="metric-label">THERMAL VARIANCE</span>
                         <span class="metric-value" id="peakVal">1524.4</span>
                     </div>
                 </div>
             </div>
 
             <div>
-                <p class="section-title">Automated Action Decision</p>
+                <p class="section-title">Automated Decision</p>
                 <ul class="decision-list">
-                    <li class="decision-item">1. SELL <span></span></li>
-                    <li class="decision-item">2. HOLD <span></span></li>
-                    <li class="decision-item active">3. DISCARD <span class="check-mark">✔</span></li>
+                    <li class="decision-item" id="decision1">1. SELL <span></span></li>
+                    <li class="decision-item" id="decision2">2. HOLD <span></span></li>
+                    <li class="decision-item active" id="decision3">3. DISCARD <span class="check-mark">✔</span></li>
                 </ul>
             </div>
 
             <div class="footer-note">
-                <b>System Analytics:</b> Analysis based on multi-spectral imaging and thermal variance patterns. Sample ID: WHOLE-FISH-001.
+                <b>Analysis Method:</b> Multi-spectral RGB + Thermal imaging with AI-powered segmentation. 
+                Dynamic Auto-Targeting achieved 100% success rate. 
+                Sample: <b id="fishIdFooter">WHOLE-FISH-001</b> | 
+                Location: University of Tsukuba - Bioproduction Lab
             </div>
         </section>
     </main>
@@ -254,31 +286,98 @@
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
     import { getDatabase, ref, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
-    // Using your established Firebase link
-    const firebaseConfig = { databaseURL: "https://fish-digital-twin-default-rtdb.asia-southeast1.firebasedatabase.app" };
+    const firebaseConfig = { 
+        databaseURL: "https://fish-digital-twin-default-rtdb.asia-southeast1.firebasedatabase.app" 
+    };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     
+    const urlParams = new URLSearchParams(window.location.search);
+    const fishId = urlParams.get('id') || 'WHOLE-FISH-001';
+    
     const viewer = document.getElementById('fishModel');
-    const MODEL_FRESH = "https://hasini1992.github.io/fish-digital-twin/fish.glb";
-    const MODEL_SPOILED = "https://hasini1992.github.io/fish-digital-twin/fish_more_red.glb";
 
-    onValue(ref(db, `fishes/WHOLE-FISH-001`), (snapshot) => {
+    // Update stars based on quality
+    function updateStars(quality) {
+        const starsContainer = document.getElementById('qualityStars');
+        let starsHTML = '';
+        for (let i = 0; i < 5; i++) {
+            if (i < quality) {
+                starsHTML += '<span class="star-on">★</span>';
+            } else {
+                starsHTML += '<span class="star-off">★</span>';
+            }
+        }
+        starsContainer.innerHTML = starsHTML;
+    }
+
+    // Update decision based on body ΔE
+    function updateDecision(bodyDE) {
+        // Reset all
+        document.getElementById('decision1').classList.remove('active');
+        document.getElementById('decision2').classList.remove('active');
+        document.getElementById('decision3').classList.remove('active');
+        
+        document.getElementById('decision1').innerHTML = '1. SELL <span></span>';
+        document.getElementById('decision2').innerHTML = '2. HOLD <span></span>';
+        document.getElementById('decision3').innerHTML = '3. DISCARD <span></span>';
+        
+        if (bodyDE < 3.5) {
+            // SELL - Fresh/Good
+            document.getElementById('decision1').classList.add('active');
+            document.getElementById('decision1').innerHTML = '1. SELL <span class="check-mark">✔</span>';
+        } else if (bodyDE < 6.0) {
+            // HOLD - Moderate
+            document.getElementById('decision2').classList.add('active');
+            document.getElementById('decision2').innerHTML = '2. HOLD <span class="check-mark">✔</span>';
+        } else {
+            // DISCARD - Poor/Critical
+            document.getElementById('decision3').classList.add('active');
+            document.getElementById('decision3').innerHTML = '3. DISCARD <span class="check-mark">✔</span>';
+        }
+    }
+
+    // Load fish data from Firebase
+    onValue(ref(db, `fishes/${fishId}`), (snapshot) => {
         if (snapshot.exists()) {
             const data = snapshot.val();
-            const de = data.bodyDeltaE_max || 18.49; // Default fallback to your requested values
             
-            // Text values
-            document.getElementById('bodyVal').textContent = de.toFixed(2);
-            document.getElementById('eyeVal').textContent = (data.eyeDeltaE_max || 54.18).toFixed(2);
-            document.getElementById('peakVal').textContent = (data.thermalVariance || 1524.4).toFixed(1);
-
-            // Smart Model Swap
-            if (de > 6.0) {
-                if (viewer.src !== MODEL_SPOILED) viewer.src = MODEL_SPOILED;
+            const bodyDE = data.bodyDeltaE_max || 18.49;
+            const eyeDE = data.eyeDeltaE_max || 54.18;
+            const thermalVar = data.thermalVariance || 1524.4;
+            const quality = data.qualityScore || 1;
+            const status = data.spoilageStatus || 'CRITICAL';
+            
+            // Update values
+            document.getElementById('bodyVal').textContent = bodyDE.toFixed(2);
+            document.getElementById('eyeVal').textContent = eyeDE.toFixed(2);
+            document.getElementById('peakVal').textContent = thermalVar.toFixed(1);
+            document.getElementById('fishIdFooter').textContent = fishId;
+            
+            // Update stars
+            updateStars(quality);
+            
+            // Update status pill
+            const statusPill = document.getElementById('statusPill');
+            statusPill.textContent = `STATUS: ${status}`;
+            
+            // Update decision
+            updateDecision(bodyDE);
+            
+            // Apply color filter to fish based on ΔE
+            if (bodyDE < 2.0) {
+                viewer.style.filter = 'brightness(1.2) saturate(1.1)';
+            } else if (bodyDE < 3.5) {
+                viewer.style.filter = 'brightness(1.0) saturate(1.0) sepia(0.1)';
+            } else if (bodyDE < 6.0) {
+                viewer.style.filter = 'brightness(0.9) saturate(0.85) sepia(0.3) hue-rotate(20deg)';
+            } else if (bodyDE < 10.0) {
+                viewer.style.filter = 'brightness(0.75) saturate(0.7) sepia(0.5) hue-rotate(30deg)';
             } else {
-                if (viewer.src !== MODEL_FRESH) viewer.src = MODEL_FRESH;
+                viewer.style.filter = 'brightness(0.5) saturate(1.2) sepia(0.7) hue-rotate(340deg)';
             }
+            
+            console.log('Fish data loaded:', fishId, 'Body ΔE:', bodyDE, 'Status:', status);
         }
     });
 </script>
