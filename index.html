@@ -1,70 +1,110 @@
-<script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getDatabase, ref, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fish Digital Twin - Coordinate Finder</title>
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #2d3436;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
 
-        const firebaseConfig = { databaseURL: "https://fish-digital-twin-default-rtdb.asia-southeast1.firebasedatabase.app" };
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+        /* THE COORDINATE BOX */
+        #coordDisplay {
+            background: #0984e3;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+            border: 2px solid white;
+        }
 
-        // --- IMPROVED COORDINATE FINDER ---
+        .fish-container {
+            width: 100%;
+            max-width: 800px;
+            height: 500px;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        model-viewer {
+            width: 100%;
+            height: 100%;
+        }
+
+        .Hotspot { background: red; border-radius: 50%; width: 10px; height: 10px; border: none; }
+        .spot-glow {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 0, 0, 0.5);
+            border-radius: 50%;
+            filter: blur(10px);
+            transform: translate(-50%, -50%);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="coordDisplay">
+        <h3>Step 1: Click on the Fish's Belly or Eye</h3>
+        <p id="posLabel">Position: <b>Click the fish...</b></p>
+        <p id="normLabel">Normal: <b>Click the fish...</b></p>
+        <p style="margin-top:10px; font-size: 0.8em; color: #dfe6e9;">Copy these values into your HTML data-position and data-normal attributes.</p>
+    </div>
+
+    <div class="fish-container">
+        <model-viewer 
+            id="fishModel"
+            src="https://hasini1992.github.io/fish-digital-twin/fish.glb"
+            camera-controls
+            auto-rotate
+            shadow-intensity="1">
+            
+            <button class="Hotspot" slot="hotspot-belly" data-position="0 0 0" data-normal="0 1 0">
+                <div class="spot-glow"></div>
+            </button>
+        </model-viewer>
+    </div>
+
+    <script type="module">
         const viewer = document.querySelector('#fishModel');
-        
-        // We use 'click' but specifically check the model-viewer API
+        const posLabel = document.querySelector('#posLabel');
+        const normLabel = document.querySelector('#normLabel');
+
         viewer.addEventListener('click', (event) => {
+            // Get the click position relative to the viewer
             const rect = viewer.getBoundingClientRect();
             const x = event.clientX - rect.left;
             const y = event.clientY - rect.top;
-            
-            // This core function finds the 3D point on the "skin" of the fish
+
+            // Ask the model-viewer for the 3D point under the mouse
             const hit = viewer.positionAndNormalFromPoint(x, y);
-            
+
             if (hit) {
-                const pos = `${hit.position.x}m ${hit.position.y}m ${hit.position.z}m`;
-                const norm = `${hit.normal.x}m ${hit.normal.y}m ${hit.normal.z}m`;
+                const posStr = `${hit.position.x}m ${hit.position.y}m ${hit.position.z}m`;
+                const normStr = `${hit.normal.x}m ${hit.normal.y}m ${hit.normal.z}m`;
 
-                // 1. Show an alert so you can see it immediately
-                alert("COORDINATES FOUND!\n\nPos: " + pos + "\nNorm: " + norm + "\n\nCheck the console (F12) to copy/paste.");
-
-                // 2. Print to console with styling to make it stand out
-                console.log("%c --- NEW COORDINATES ---", "background: #222; color: #bada55; font-size: 15px;");
-                console.log(`data-position="${pos}"`);
-                console.log(`data-normal="${norm}"`);
-                console.log("%c ------------------------", "background: #222; color: #bada55; font-size: 15px;");
-            } else {
-                console.log("Click missed the fish. Try clicking directly on the body.");
-            }
-        });
-
-        // --- FIREBASE DATA LOGIC ---
-        function getColor(de, type) {
-            const limit = type === 'eye' ? 10 : 6;
-            if (de < 2) return { color: 'transparent', opacity: 0 };
-            if (de > limit) return { color: '#ff0000', opacity: 0.7 }; 
-            return { color: '#ffa500', opacity: 0.5 }; 
-        }
-
-        const fishRef = ref(db, `fishes/WHOLE-FISH-001`);
-        onValue(fishRef, (snapshot) => {
-            if (snapshot.exists()) {
-                const data = snapshot.val();
-                const bodyDE = data.bodyDeltaE_max || 0;
-                const eyeDE = data.eyeDeltaE_max || 0;
-
-                document.getElementById('bodyVal').textContent = bodyDE.toFixed(2);
-                document.getElementById('eyeVal').textContent = eyeDE.toFixed(2);
+                // Update the blue box on the screen
+                posLabel.innerHTML = `Position: <b style="color:yellow">${posStr}</b>`;
+                normLabel.innerHTML = `Normal: <b style="color:yellow">${normStr}</b>`;
                 
-                const bStyle = getColor(bodyDE, 'body');
-                const eStyle = getColor(eyeDE, 'eye');
-
-                const bEl = document.getElementById('bellySpot');
-                bEl.style.opacity = bStyle.opacity;
-                bEl.style.backgroundColor = bStyle.color;
-                bEl.style.boxShadow = `0 0 40px ${bStyle.color}`;
-
-                const eEl = document.getElementById('eyeSpot');
-                eEl.style.opacity = eStyle.opacity;
-                eEl.style.backgroundColor = eStyle.color;
-                eEl.style.boxShadow = `0 0 20px ${eStyle.color}`;
+                console.log("Success! Coordinates updated in the UI.");
+            } else {
+                console.log("Missed! Try clicking directly on the fish body.");
             }
         });
     </script>
+</body>
+</html>
