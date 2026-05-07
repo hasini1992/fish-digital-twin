@@ -54,7 +54,7 @@
             width: 100%;
             height: 500px;
             border-radius: 15px;
-            background: #FFFFFF;  /* Pure white background */
+            background: #FFFFFF;
             border: 2px solid #e0e0e0;
         }
         
@@ -62,52 +62,6 @@
             width: 100%;
             height: 100%;
             --poster-color: transparent;
-        }
-        
-        /* Colored overlay shapes for body spoilage */
-        .body-overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 250px;
-            height: 150px;
-            border-radius: 50%;
-            pointer-events: none;
-            mix-blend-mode: multiply;
-            opacity: 0;
-            transition: opacity 1s ease, background-color 1s ease;
-        }
-        
-        .body-overlay.active {
-            opacity: 0.4;
-        }
-        
-        /* Colored overlay shapes for eyes */
-        .eye-overlay-left,
-        .eye-overlay-right {
-            position: absolute;
-            top: 42%;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            pointer-events: none;
-            mix-blend-mode: multiply;
-            opacity: 0;
-            transition: opacity 1s ease, background-color 1s ease;
-        }
-        
-        .eye-overlay-left {
-            left: 58%;
-        }
-        
-        .eye-overlay-right {
-            left: 62%;
-        }
-        
-        .eye-overlay-left.active,
-        .eye-overlay-right.active {
-            opacity: 0.5;
         }
         
         .color-info {
@@ -284,11 +238,6 @@
                         camera-orbit="0deg 75deg 105%"
                         exposure="1.2">
                     </model-viewer>
-                    
-                    <!-- Colored overlays for spoilage visualization -->
-                    <div id="bodyOverlay" class="body-overlay"></div>
-                    <div id="eyeOverlayLeft" class="eye-overlay-left"></div>
-                    <div id="eyeOverlayRight" class="eye-overlay-right"></div>
                 </div>
                 
                 <div class="color-info">
@@ -383,12 +332,15 @@
         const urlParams = new URLSearchParams(window.location.search);
         const fishId = urlParams.get('id') || 'WHOLE-FISH-001';
 
-        // Get overlay elements
-        const bodyOverlay = document.getElementById('bodyOverlay');
-        const eyeOverlayLeft = document.getElementById('eyeOverlayLeft');
-        const eyeOverlayRight = document.getElementById('eyeOverlayRight');
+        // Helper function to convert hex colors to WebGL RGBA arrays
+        function hexToRgbaArray(hex, alpha = 1) {
+            hex = hex.replace('#', '');
+            const r = parseInt(hex.substring(0, 2), 16) / 255;
+            const g = parseInt(hex.substring(2, 4), 16) / 255;
+            const b = parseInt(hex.substring(4, 6), 16) / 255;
+            return [r, g, b, alpha];
+        }
 
-        // Function to get color based on Delta E
         function getBodyColor(deltaE) {
             if (deltaE < 2.0) {
                 return { color: '#C0C0C0', name: 'Fresh Silver', opacity: 0 };
@@ -415,51 +367,55 @@
             }
         }
 
-        // Function to update colored overlays
-        function updateFishOverlays(bodyDE, eyeDE) {
-            const bodyColor = getBodyColor(bodyDE);
-            const eyeColor = getEyeColor(eyeDE);
+        // Updated function to apply colors directly to the 3D model
+        async function updateFishOverlays(bodyDE, eyeDE) {
+            const bodyColorData = getBodyColor(bodyDE);
+            const eyeColorData = getEyeColor(eyeDE);
 
-            // Update body overlay
-            bodyOverlay.style.backgroundColor = bodyColor.color;
-            bodyOverlay.style.opacity = bodyColor.opacity;
-            if (bodyColor.opacity > 0) {
-                bodyOverlay.classList.add('active');
-            } else {
-                bodyOverlay.classList.remove('active');
-            }
-
-            // Update eye overlays
-            eyeOverlayLeft.style.backgroundColor = eyeColor.color;
-            eyeOverlayRight.style.backgroundColor = eyeColor.color;
-            eyeOverlayLeft.style.opacity = eyeColor.opacity;
-            eyeOverlayRight.style.opacity = eyeColor.opacity;
-            if (eyeColor.opacity > 0) {
-                eyeOverlayLeft.classList.add('active');
-                eyeOverlayRight.classList.add('active');
-            } else {
-                eyeOverlayLeft.classList.remove('active');
-                eyeOverlayRight.classList.remove('active');
-            }
-
-            // Update labels
-            document.getElementById('bodyColorName').textContent = bodyColor.name;
-            document.getElementById('bodyColorName').style.color = bodyColor.color;
-            document.getElementById('eyeColorName').textContent = eyeColor.name;
-            document.getElementById('eyeColorName').style.color = eyeColor.color;
-
+            // Update UI labels
+            document.getElementById('bodyColorName').textContent = bodyColorData.name;
+            document.getElementById('bodyColorName').style.color = bodyColorData.color;
+            document.getElementById('eyeColorName').textContent = eyeColorData.name;
+            document.getElementById('eyeColorName').style.color = eyeColorData.color;
             document.getElementById('bodyDEDisplay').textContent = bodyDE.toFixed(2);
             document.getElementById('eyeDEDisplay').textContent = eyeDE.toFixed(2);
 
-            console.log(`Overlays updated: Body=${bodyColor.name} (${bodyColor.color}), Eye=${eyeColor.name} (${eyeColor.color})`);
+            const modelViewer = document.getElementById('fishModel');
+            
+            // Wait for the model to be fully loaded before changing materials
+            if (!modelViewer.model) {
+                await new Promise(resolve => {
+                    modelViewer.addEventListener('load', resolve, { once: true });
+                });
+            }
+
+            const materials = modelViewer.model.materials;
+            
+            // Convert to RGBA. If opacity > 0, apply a tint.
+            const bodyRgba = hexToRgbaArray(bodyColorData.color, bodyColorData.opacity > 0 ? 0.8 : 1);
+            const eyeRgba = hexToRgbaArray(eyeColorData.color, eyeColorData.opacity > 0 ? 0.8 : 1);
+
+            // Apply colors based on material names
+            for (const material of materials) {
+                const matName = material.name.toLowerCase();
+                
+                // Adjust these string checks based on the actual material names in your .glb file
+                if (matName.includes('body') || matName.includes('skin')) {
+                    material.pbrMetallicRoughness.setBaseColorFactor(bodyRgba);
+                }
+                
+                if (matName.includes('eye')) {
+                    material.pbrMetallicRoughness.setBaseColorFactor(eyeRgba);
+                }
+            }
+
+            console.log(`3D Model updated: Body=${bodyColorData.name}, Eye=${eyeColorData.name}`);
         }
 
-        // Get quality stars
         function getQualityStars(score) {
             return '⭐'.repeat(score) + '☆'.repeat(5 - score);
         }
 
-        // Load fish data
         const fishRef = ref(db, `fishes/${fishId}`);
         
         onValue(fishRef, (snapshot) => {
@@ -469,19 +425,16 @@
                 const data = snapshot.val();
                 document.getElementById('mainContent').style.display = 'grid';
                 
-                // Basic info
                 document.getElementById('fishId').textContent = fishId;
                 document.getElementById('species').textContent = data.species || 'Unknown Species';
                 document.getElementById('location').textContent = '📍 ' + (data.location || 'Unknown');
                 document.getElementById('catchDate').textContent = '📅 Caught: ' + (data.catchDate || 'Unknown');
                 
-                // Status badge
                 const status = data.spoilageStatus || 'UNKNOWN';
                 const statusBadge = document.getElementById('statusBadge');
                 statusBadge.textContent = status;
                 statusBadge.className = `status-badge badge-${status.toLowerCase()}`;
                 
-                // Quality metrics
                 const bodyDE = data.bodyDeltaE_max || 0;
                 const eyeDE = data.eyeDeltaE_max || 0;
                 const thermalVar = data.thermalVariance || 0;
@@ -501,10 +454,9 @@
                 document.getElementById('thermalVar').textContent = thermalVar.toFixed(1);
                 document.getElementById('samples').textContent = samples;
                 
-                // ⭐⭐⭐ UPDATE COLORED OVERLAYS ON FISH ⭐⭐⭐
+                // Call the new async function to update the 3D materials
                 updateFishOverlays(bodyDE, eyeDE);
                 
-                // Alert box
                 if (status === 'CRITICAL') {
                     const alertBox = document.getElementById('alertBox');
                     alertBox.style.display = 'block';
@@ -515,9 +467,10 @@
                     if (thermalVar > 480) reasons.push(`Thermal: ${thermalVar.toFixed(1)} (exceeds 480)`);
                     
                     document.getElementById('alertMessage').innerHTML = reasons.join('<br>');
+                } else {
+                    document.getElementById('alertBox').style.display = 'none';
                 }
                 
-                // Analysis details
                 document.getElementById('analysisType').textContent = '🔬 ' + (data.analysisType || 'Not analyzed');
                 document.getElementById('segmentation').textContent = '🎯 ' + (data.segmentationMethod || 'Unknown');
                 document.getElementById('lastAnalyzed').textContent = '🕐 ' + (data.lastAnalyzed || 'Never');
