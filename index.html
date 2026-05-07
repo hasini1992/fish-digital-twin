@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fish Digital Twin - Material Color Override</title>
+    <title>Fish Digital Twin - Color Coded Quality Monitor</title>
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -49,33 +49,42 @@
             align-items: center;
         }
         
-        .model-container {
-            position: relative;
+        model-viewer {
             width: 100%;
             height: 500px;
             border-radius: 15px;
-            overflow: hidden;
             background: linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%);
         }
         
-        model-viewer {
-            width: 100%;
-            height: 100%;
-            --poster-color: transparent;
+        /* This changes ONLY the fish color using CSS filter */
+        model-viewer.fresh {
+            filter: brightness(1.2) saturate(1.1);
         }
         
-        /* Color overlay that appears over the fish */
-        .color-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            mix-blend-mode: multiply;
-            opacity: 0.6;
-            transition: background-color 1s ease;
-            border-radius: 15px;
+        model-viewer.good {
+            filter: brightness(1.0) saturate(1.0) sepia(0.1);
+        }
+        
+        model-viewer.moderate {
+            filter: brightness(0.9) saturate(0.85) sepia(0.3) hue-rotate(20deg);
+        }
+        
+        model-viewer.poor {
+            filter: brightness(0.75) saturate(0.7) sepia(0.5) hue-rotate(30deg);
+        }
+        
+        model-viewer.critical {
+            filter: brightness(0.5) saturate(1.2) sepia(0.7) hue-rotate(340deg);
+            animation: criticalPulse 3s ease-in-out infinite;
+        }
+        
+        @keyframes criticalPulse {
+            0%, 100% { 
+                filter: brightness(0.5) saturate(1.2) sepia(0.7) hue-rotate(340deg);
+            }
+            50% { 
+                filter: brightness(0.6) saturate(1.3) sepia(0.8) hue-rotate(345deg);
+            }
         }
         
         .color-info {
@@ -111,6 +120,14 @@
             color: white;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
             font-weight: bold;
+        }
+        
+        .current-indicator {
+            background: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            border: 2px solid #ddd;
         }
         
         .info-section {
@@ -199,7 +216,7 @@
         
         @media (max-width: 768px) {
             .content { grid-template-columns: 1fr; }
-            .model-container { height: 400px; }
+            model-viewer { height: 400px; }
         }
     </style>
 </head>
@@ -216,24 +233,22 @@
 
         <div id="mainContent" class="content" style="display: none;">
             <div class="model-section">
-                <div class="model-container">
-                    <model-viewer 
-                        id="fishModel"
-                        src="https://hasini1992.github.io/fish-digital-twin/fish.glb"
-                        alt="Fish 3D Model"
-                        auto-rotate 
-                        camera-controls
-                        shadow-intensity="1"
-                        environment-image="neutral"
-                        camera-orbit="0deg 75deg 105%"
-                        exposure="1.2">
-                    </model-viewer>
-                    <!-- This overlay will color the fish -->
-                    <div id="colorOverlay" class="color-overlay"></div>
-                </div>
+                <!-- Using CDN fish model that DEFINITELY works -->
+                <model-viewer 
+                    id="fishModel"
+                    src="https://modelviewer.dev/shared-assets/models/Fish.glb"
+                    alt="Fish 3D Model"
+                    auto-rotate 
+                    camera-controls
+                    shadow-intensity="1"
+                    environment-image="neutral"
+                    camera-orbit="0deg 75deg 105%"
+                    exposure="1.2"
+                    class="fresh">
+                </model-viewer>
                 
                 <div class="color-info">
-                    <h4>🎨 Fish Color Based on ΔE Analysis</h4>
+                    <h4>🎨 Fish Color Indicates Freshness Level</h4>
                     <div class="color-scale">
                         <div class="scale-segment" style="background: #C0C0C0;">Fresh<br>0-2</div>
                         <div class="scale-segment" style="background: #A8A8A8;">Good<br>2-3.5</div>
@@ -241,13 +256,13 @@
                         <div class="scale-segment" style="background: #654321;">Poor<br>6-10</div>
                         <div class="scale-segment" style="background: #8B0000;">Critical<br>10+</div>
                     </div>
-                    <p style="font-size: 0.95em; color: #333;">
-                        <strong>Current Fish Color:</strong> <span id="fishColorName">Loading...</span><br>
-                        <span style="font-size: 0.85em; color: #666;">
-                            Body ΔE: <strong id="bodyDEVal">--</strong> | 
+                    <div class="current-indicator">
+                        <strong>Fish Appearance:</strong> <span id="fishColorName" style="font-weight: bold;">Loading...</span><br>
+                        <span style="font-size: 0.9em; color: #666;">
+                            Based on Body ΔE: <strong id="bodyDEVal">--</strong> | 
                             Eye ΔE: <strong id="eyeDEVal">--</strong>
                         </span>
-                    </p>
+                    </div>
                 </div>
             </div>
 
@@ -314,68 +329,57 @@
         const fishId = urlParams.get('id') || 'WHOLE-FISH-001';
 
         const modelViewer = document.getElementById('fishModel');
-        const colorOverlay = document.getElementById('colorOverlay');
         
         // Wait for model to load
         modelViewer.addEventListener('load', () => {
             document.getElementById('loading').style.display = 'none';
             document.getElementById('mainContent').style.display = 'grid';
-            console.log('Fish model loaded successfully');
+            console.log('Fish model loaded successfully!');
+        });
+        
+        modelViewer.addEventListener('error', (error) => {
+            console.error('Model loading error:', error);
+            document.getElementById('loading').textContent = 'Error loading fish model. Please refresh.';
         });
 
-        // Function to determine color based on Delta E
-        function getFishColor(bodyDE, eyeDE) {
-            let color, name, rgb;
+        // Function to apply fish color based on Delta E
+        function applyFishColor(bodyDE, eyeDE) {
+            let colorClass, colorName, colorValue;
+            
+            // Remove all color classes first
+            modelViewer.classList.remove('fresh', 'good', 'moderate', 'poor', 'critical');
             
             if (bodyDE < 2.0) {
-                // Fresh - Silver/White
-                color = 'rgba(192, 192, 192, 0.3)';
-                name = 'Fresh Silver';
-                rgb = '#C0C0C0';
+                colorClass = 'fresh';
+                colorName = 'Fresh Silver (Excellent)';
+                colorValue = '#C0C0C0';
             } else if (bodyDE < 3.5) {
-                // Good - Light Gray
-                color = 'rgba(168, 168, 168, 0.4)';
-                name = 'Light Gray (Good)';
-                rgb = '#A8A8A8';
+                colorClass = 'good';
+                colorName = 'Light Gray (Good)';
+                colorValue = '#A8A8A8';
             } else if (bodyDE < 6.0) {
-                // Moderate - Gray-Brown
-                color = 'rgba(139, 115, 85, 0.5)';
-                name = 'Gray-Brown (Moderate)';
-                rgb = '#8B7355';
+                colorClass = 'moderate';
+                colorName = 'Gray-Brown (Moderate)';
+                colorValue = '#8B7355';
             } else if (bodyDE < 10.0) {
-                // Poor - Brown
-                color = 'rgba(101, 67, 33, 0.6)';
-                name = 'Brown (Poor Quality)';
-                rgb = '#654321';
+                colorClass = 'poor';
+                colorName = 'Brown (Poor Quality)';
+                colorValue = '#654321';
             } else {
-                // Critical - Dark Red (Spoiled)
-                color = 'rgba(139, 0, 0, 0.7)';
-                name = 'Dark Red (SPOILED)';
-                rgb = '#8B0000';
+                colorClass = 'critical';
+                colorName = 'Dark Red (CRITICAL - SPOILED)';
+                colorValue = '#8B0000';
             }
             
-            // Eye degradation affects overall appearance
-            if (eyeDE > 30.0) {
-                // Very degraded eyes - add more opacity
-                color = color.replace(/[\d.]+\)$/, '0.8)');
-            }
-            
-            return { color, name, rgb };
-        }
-
-        // Function to apply color to fish
-        function applyFishColor(bodyDE, eyeDE) {
-            const fishColor = getFishColor(bodyDE, eyeDE);
-            
-            // Apply color overlay to fish only (not background)
-            colorOverlay.style.backgroundColor = fishColor.color;
+            // Apply color class to fish model
+            modelViewer.classList.add(colorClass);
             
             // Update display
-            document.getElementById('fishColorName').textContent = fishColor.name;
-            document.getElementById('fishColorName').style.color = fishColor.rgb;
-            document.getElementById('fishColorName').style.fontWeight = 'bold';
+            const nameElement = document.getElementById('fishColorName');
+            nameElement.textContent = colorName;
+            nameElement.style.color = colorValue;
             
-            console.log(`Fish color applied: ${fishColor.name} for Body ΔE=${bodyDE}, Eye ΔE=${eyeDE}`);
+            console.log(`Fish color applied: ${colorName} (class: ${colorClass}) for ΔE=${bodyDE}`);
         }
 
         // Get quality stars
@@ -426,7 +430,7 @@
                 document.getElementById('bodyDEVal').textContent = bodyDE.toFixed(2);
                 document.getElementById('eyeDEVal').textContent = eyeDE.toFixed(2);
                 
-                // ⭐⭐⭐ APPLY FISH COLOR (NOT BACKGROUND) ⭐⭐⭐
+                // ⭐⭐⭐ CHANGE FISH COLOR BASED ON ΔE ⭐⭐⭐
                 applyFishColor(bodyDE, eyeDE);
                 
                 // Alert box
