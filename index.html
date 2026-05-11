@@ -1,296 +1,496 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fish Digital Twin - Research Dashboard</title>
-    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
-    <style>
-        :root {
-            --bg: #0f172a;
-            --card-bg: #1e293b;
-            --accent: #818cf8;
-            --critical: #ff4d4d;
-            --text: #f8fafc;
-            --muted: #cbd5e1;
-            --panel-border: #334155;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fish Digital Twin</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
+:root{
+  --bg:#070d14;--surface:#0d1820;--surface2:#111e2a;--border:#1a2e40;
+  --accent:#00c8ff;--red:#ff4e4e;--green:#00e87a;--amber:#ffb020;
+  --text:#e8f4ff;--muted:#4a7090;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;
+  background-image:linear-gradient(rgba(0,200,255,.03)1px,transparent 1px),linear-gradient(90deg,rgba(0,200,255,.03)1px,transparent 1px);
+  background-size:40px 40px;pointer-events:none;z-index:0}
+.app{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:1.2rem}
 
-        /* Essential for mobile scrolling */
-        html, body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            min-height: 100%;
-            background: var(--bg);
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            color: var(--text);
-            overflow-x: auto; /* Allows left-right scroll */
-            overflow-y: auto; /* Allows up-down scroll */
-        }
+/* TOP BAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:.6rem 1.2rem;
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:1rem;gap:12px;flex-wrap:wrap}
+.topbar-title{font-family:'Space Mono',monospace;font-size:14px;font-weight:700;color:var(--accent);letter-spacing:2px;text-transform:uppercase}
+.conn-row{display:flex;align-items:center;gap:8px}
+.conn-dot{width:8px;height:8px;border-radius:50%;background:#444;flex-shrink:0;transition:all .4s}
+.conn-dot.live{background:var(--green);box-shadow:0 0 8px var(--green)}
+.conn-dot.off{background:var(--red)}
+.conn-txt{font-size:11px;color:var(--muted);font-family:'Space Mono',monospace}
+.live-pill{font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(0,232,122,.08);color:var(--green);border:1px solid rgba(0,232,122,.3);font-family:'Space Mono',monospace;letter-spacing:1px;display:none}
 
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 10px;
-        }
+/* FISH SELECTOR */
+.fish-selector{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:1rem}
+.fish-card{min-width:150px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;cursor:pointer;transition:all .2s;flex-shrink:0}
+.fish-card:hover{border-color:var(--accent);transform:translateY(-1px)}
+.fish-card.active{border-color:var(--accent);background:var(--surface2)}
+.fc-id{font-size:12px;font-weight:700;color:var(--accent);font-family:'Space Mono',monospace;margin-bottom:3px}
+.fc-sp{font-size:11px;color:var(--muted);margin-bottom:2px}
+.fc-pill{display:inline-block;font-size:10px;padding:2px 8px;border-radius:20px;border:1px solid;margin-top:5px;font-weight:600;letter-spacing:.5px}
 
-        .dashboard {
-            width: 100%;
-            max-width: 1300px;
-            min-width: 360px; /* Prevents squishing on small phones */
-            background: var(--card-bg);
-            border-radius: 20px;
-            border: 2px solid var(--panel-border);
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 40px 80px rgba(0,0,0,0.6);
-            margin: 10px auto;
-        }
+/* CONTROLS */
+.ctrl-row{display:flex;align-items:center;gap:8px;margin-bottom:.6rem;flex-wrap:wrap}
+.cbtn{padding:5px 14px;border-radius:8px;border:1px solid var(--border);background:transparent;cursor:pointer;font-size:12px;color:#ccc;font-family:'Outfit',sans-serif;transition:all .2s}
+.cbtn:hover{background:var(--surface2);border-color:#2a4060}
+.cbtn.play{background:#0a2a4a;color:var(--accent);border-color:var(--accent)}
+.cbtn.play.on{background:#3a0a0a;color:var(--red);border-color:var(--red)}
+.srow{display:flex;align-items:center;gap:10px;margin-bottom:.6rem}
+.srow label{font-size:11px;color:var(--muted);white-space:nowrap;font-family:'Space Mono',monospace}
+input[type=range]{flex:1;accent-color:var(--accent)}
+.day-strip{display:flex;gap:4px;overflow-x:auto;padding-bottom:4px;margin-bottom:.8rem}
+.ds{min-width:40px;border-radius:6px;padding:4px 2px;text-align:center;cursor:pointer;border:1.5px solid transparent;flex-shrink:0;background:var(--surface)}
+.ds.on{border-color:var(--accent)}
+.ds .dd{font-size:10px;font-weight:600;color:var(--muted)}
+.ds .dp{font-size:9px;color:var(--muted)}
 
-        /* HEADER */
-        .header {
-            background: #1e293b;
-            border-bottom: 4px solid var(--accent);
-            display: flex;
-            align-items: center;
-            padding: 20px 30px;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
+/* MAIN GRID */
+.main-grid{display:grid;grid-template-columns:1fr 320px;gap:1rem;margin-bottom:1rem}
+@media(max-width:700px){.main-grid{grid-template-columns:1fr}}
 
-        .header h1 {
-            font-size: 2.2rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: var(--accent);
-            font-weight: 800;
-        }
+/* FISH PANEL */
+.fish-panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1rem;display:flex;flex-direction:column;gap:.75rem}
+.fish-panel-header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.fid{font-size:20px;font-weight:700;color:#fff;font-family:'Space Mono',monospace}
+.fsub{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.4}
+.status-pill{font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px;border:2px solid;letter-spacing:1px;font-family:'Space Mono',monospace;white-space:nowrap}
+.badges-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.bdg{font-size:10px;font-weight:500;padding:3px 10px;border-radius:20px;border:1px solid}
+canvas#fishCv{display:block;width:100%;border-radius:10px;background:#000}
+.bar-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.bar-item{background:var(--surface2);border-radius:8px;padding:8px 10px;border:1px solid var(--border)}
+.bar-lbl{font-size:10px;color:var(--muted);margin-bottom:6px;font-family:'Space Mono',monospace;letter-spacing:.5px}
+.bar-track{background:#0a1520;border-radius:3px;height:4px}
+.bar-fill{height:4px;border-radius:3px;transition:width .7s ease,background .7s ease}
+.desc-row{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--muted);line-height:1.6}
 
-        .status-pill {
-            background: rgba(255, 77, 77, 0.2);
-            border: 3px solid var(--critical);
-            color: var(--critical);
-            padding: 10px 25px;
-            border-radius: 50px;
-            font-weight: 900;
-            font-size: 1.4rem;
-            animation: pulse 1.5s infinite;
-        }
+/* RIGHT PANEL */
+.right-panel{display:flex;flex-direction:column;gap:.8rem}
+.panel-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+.panel-label{font-size:10px;font-weight:600;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:10px;font-family:'Space Mono',monospace}
+.stars{display:flex;gap:5px;margin-bottom:.25rem}
+.star{font-size:22px}
+.star.on{color:#ffb020}
+.star.off{color:#1a2e40}
+.de-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+.de-row:last-child{border-bottom:none}
+.de-label{font-size:11px;color:var(--muted);font-family:'Space Mono',monospace}
+.de-value{font-size:18px;font-weight:700;font-family:'Space Mono',monospace}
+.de-value.critical{color:var(--red)}
+.de-value.warning{color:var(--amber)}
+.de-value.good{color:var(--green)}
+.rec-buttons{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.rec-btn{padding:9px 14px;border-radius:8px;border:1px solid;font-size:12px;font-weight:600;cursor:pointer;font-family:'Space Mono',monospace;letter-spacing:.5px;background:transparent;transition:all .2s;text-align:left;display:flex;align-items:center;gap:8px}
+.rec-btn.sell{border-color:#1a2e40;color:#2a4060}
+.rec-btn.hold{border-color:#1a2e40;color:#2a4060}
+.rec-btn.discard{border-color:var(--red);color:var(--red);background:rgba(255,78,78,.06)}
+.rec-btn.sell.active{background:var(--green);border-color:var(--green);color:#000}
+.rec-btn.hold.active{background:var(--amber);border-color:var(--amber);color:#000}
+.rec-btn.discard.active{background:var(--red);color:#fff}
+.mini-metric{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mini-m{display:flex;flex-direction:column;gap:2px}
+.mini-val{font-size:18px;font-weight:700;font-family:'Space Mono',monospace;color:#fff}
+.mini-lbl{font-size:10px;color:var(--muted)}
+.log-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px}
+.log-item{display:flex;flex-direction:column;gap:2px}
+.log-key{color:var(--muted);font-size:10px;font-family:'Space Mono',monospace}
+.log-val{color:#aac8e0}
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.8; transform: scale(1.05); }
-        }
-
-        /* MAIN AREA: GRID FOR PC, STACK FOR MOBILE */
-        .main {
-            display: grid;
-            grid-template-columns: 1.3fr 1fr;
-            background: var(--panel-border);
-            gap: 2px;
-        }
-
-        @media (max-width: 900px) {
-            .main { grid-template-columns: 1fr; }
-            .header h1 { font-size: 1.6rem; }
-            .status-pill { font-size: 1.1rem; }
-        }
-
-        /* 3D VIEWER CONTAINER */
-        .viewer-container {
-            background: #000;
-            position: relative;
-            min-height: 400px;
-        }
-
-        @media (min-width: 901px) {
-            .viewer-container { height: 750px; }
-        }
-
-        model-viewer { width: 100%; height: 100%; }
-
-        /* ANALYTICS DATA */
-        .data-panel {
-            background: var(--card-bg);
-            padding: 30px;
-            display: flex;
-            flex-direction: column;
-            gap: 30px;
-        }
-
-        .section-title {
-            font-size: 1rem;
-            color: var(--accent);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-weight: 700;
-        }
-
-        .stars {
-            font-size: 4rem;
-            display: flex;
-            gap: 10px;
-            margin-top: -10px;
-        }
-        .star-on { color: #fbbf24; text-shadow: 0 0 15px rgba(251, 191, 36, 0.4); }
-        .star-off { color: #334155; }
-
-        .metric-group { display: flex; flex-direction: column; gap: 15px; }
-
-        .metric-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #0f172a;
-            padding: 20px;
-            border-radius: 15px;
-            border: 1px solid var(--panel-border);
-        }
-
-        .metric-label { font-size: 1.1rem; color: var(--muted); font-weight: 600; }
-        .metric-value { 
-            font-family: 'Consolas', monospace; 
-            font-weight: 800; 
-            font-size: 1.8rem; 
-            color: var(--critical); 
-        }
-
-        /* DECISION LOGIC */
-        .decision-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
-
-        .decision-item {
-            padding: 15px 25px;
-            border-radius: 12px;
-            background: #0f172a;
-            border: 2px solid #334155;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: #475569;
-        }
-
-        .decision-item.active {
-            border-color: var(--critical);
-            background: rgba(255, 77, 77, 0.05);
-            color: var(--text);
-        }
-
-        .check-mark { color: var(--critical); font-size: 2rem; }
-
-        .footer-info {
-            font-size: 1rem;
-            color: var(--muted);
-            border-top: 1px solid var(--panel-border);
-            padding-top: 20px;
-            line-height: 1.5;
-        }
-    </style>
+/* MISC */
+.loading{text-align:center;padding:2rem;color:var(--muted);font-size:13px}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin-right:6px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+.demo-note{background:rgba(255,176,32,.06);border:1px solid rgba(255,176,32,.2);border-radius:8px;padding:8px 12px;font-size:11px;color:var(--amber);margin-bottom:.75rem;font-family:'Space Mono',monospace}
+select{font-size:11px;padding:3px 6px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:#ccc}
+</style>
 </head>
 <body>
+<div class="app">
 
-<div class="dashboard">
-    <header class="header">
-        <h1>Fish Digital Twin</h1>
-        <div class="status-pill">STATUS: CRITICAL</div>
-    </header>
-
-    <main class="main">
-        <section class="viewer-container">
-            <model-viewer 
-                id="fishModel"
-                src="https://hasini1992.github.io/fish-digital-twin/fish.glb"
-                auto-rotate 
-                camera-controls 
-                shadow-intensity="1.5"
-                exposure="1.3">
-            </model-viewer>
-        </section>
-
-        <section class="data-panel">
-            <div>
-                <p class="section-title">Quality Ranking Index</p>
-                <div class="stars">
-                    <span class="star-on">★</span><span class="star-off">★</span><span class="star-off">★</span><span class="star-off">★</span><span class="star-off">★</span>
-                </div>
-            </div>
-
-            <div>
-                <p class="section-title">Spectral Spoilage Analysis</p>
-                <div class="metric-group">
-                    <div class="metric-item">
-                        <span class="metric-label">BODY ΔE MAX</span>
-                        <span class="metric-value" id="bodyVal">18.49</span>
-                    </div>
-                    <div class="metric-item">
-                        <span class="metric-label">EYE ΔE MAX</span>
-                        <span class="metric-value" id="eyeVal">54.18</span>
-                    </div>
-                    <div class="metric-item">
-                        <span class="metric-label">PEAK VARIANCE</span>
-                        <span class="metric-value" id="peakVal">1524.4</span>
-                    </div>
-                </div>
-            </div>
-
-            <div>
-                <p class="section-title">Post-Analysis Action</p>
-                <ul class="decision-list">
-                    <li class="decision-item">1. SELL</li>
-                    <li class="decision-item">2. HOLD</li>
-                    <li class="decision-item active">3. DISCARD <span class="check-mark">✔</span></li>
-                </ul>
-            </div>
-
-            <div class="footer-info">
-                <strong>Doctoral Research:</strong> Agricultural Robotics Lab.<br>
-                University of Tsukuba, 2026.
-            </div>
-        </section>
-    </main>
+<div class="topbar">
+  <div class="topbar-title">⬡ Fish Digital Twin</div>
+  <div class="conn-row">
+    <div class="conn-dot" id="connDot"></div>
+    <span class="conn-txt" id="connTxt">Connecting…</span>
+    <span class="live-pill" id="livePill">LIVE</span>
+  </div>
 </div>
 
-<script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-    import { getDatabase, ref, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+<div class="demo-note" id="demoNote" style="display:none">⚠ Firebase not configured — showing demo data. Update FIREBASE_CONFIG to connect live.</div>
 
-    const firebaseConfig = { databaseURL: "https://fish-digital-twin-default-rtdb.asia-southeast1.firebasedatabase.app" };
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    
-    const viewer = document.getElementById('fishModel');
-    
-    // MODEL LINKS
-    const MODEL_FRESH = "https://hasini1992.github.io/fish-digital-twin/fish.glb";
-    const MODEL_SPOILED = "https://hasini1992.github.io/fish-digital-twin/fish_more_red.glb";
+<div class="fish-selector" id="fishRow"><div class="loading"><span class="spinner"></span>Loading records…</div></div>
 
-    onValue(ref(db, `fishes/WHOLE-FISH-001`), (snapshot) => {
-        if (snapshot.exists()) {
-            const data = snapshot.val();
-            const de = data.bodyDeltaE_max || 18.49;
-            
-            // Text values
-            document.getElementById('bodyVal').textContent = de.toFixed(2);
-            document.getElementById('eyeVal').textContent = (data.eyeDeltaE_max || 54.18).toFixed(2);
-            document.getElementById('peakVal').textContent = (data.thermalVariance || 1524.4).toFixed(1);
+<div class="ctrl-row">
+  <button class="cbtn" onclick="go(-1)">Prev</button>
+  <button class="cbtn play" id="playBtn" onclick="tp()">▶ Play</button>
+  <button class="cbtn" onclick="go(1)">Next</button>
+  <label style="font-size:11px;color:var(--muted);margin-left:4px">Speed:</label>
+  <select id="spd"><option>Slow</option><option selected>Normal</option><option>Fast</option></select>
+</div>
+<div class="srow">
+  <label>Day:</label>
+  <input type="range" id="sl" min="0" max="15" value="0" oninput="gT(+this.value)">
+  <span style="font-size:11px;color:var(--muted);min-width:34px;font-family:'Space Mono',monospace" id="slv">0/15</span>
+</div>
+<div class="day-strip" id="dayStrip"></div>
 
-            // Responsive Swapping Logic
-            if (de > 6.0) {
-                if (viewer.src !== MODEL_SPOILED) {
-                    viewer.src = MODEL_SPOILED;
-                }
-            } else {
-                if (viewer.src !== MODEL_FRESH) {
-                    viewer.src = MODEL_FRESH;
-                }
-            }
-        }
-    });
+<div class="main-grid" id="mainGrid" style="display:none">
+
+  <!-- LEFT: animated fish -->
+  <div class="fish-panel">
+    <div class="fish-panel-header">
+      <div>
+        <div class="fid" id="fishId">—</div>
+        <div class="fsub" id="fishSub">—</div>
+        <div class="badges-row" id="badgesRow"></div>
+      </div>
+      <div class="status-pill" id="statusPill">—</div>
+    </div>
+    <canvas id="fishCv"></canvas>
+    <div class="bar-grid">
+      <div class="bar-item"><div class="bar-lbl">Skin quality</div><div class="bar-track"><div class="bar-fill" id="bSkin"></div></div></div>
+      <div class="bar-item"><div class="bar-lbl">Eye clarity</div><div class="bar-track"><div class="bar-fill" id="bEye"></div></div></div>
+      <div class="bar-item"><div class="bar-lbl">Spoilage</div><div class="bar-track"><div class="bar-fill" id="bSpoil"></div></div></div>
+    </div>
+    <div class="desc-row" id="descRow">—</div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right-panel">
+
+    <div class="panel-box">
+      <div class="panel-label">Quality Ranking Index</div>
+      <div class="stars" id="stars"></div>
+    </div>
+
+    <div class="panel-box">
+      <div class="panel-label">Spectral Spoilage Analysis</div>
+      <div class="de-row"><span class="de-label">BODY ΔE MAX</span><span class="de-value" id="deBody">—</span></div>
+      <div class="de-row"><span class="de-label">EYE ΔE MAX</span><span class="de-value" id="deEye">—</span></div>
+      <div class="de-row"><span class="de-label">PEAK VARIANCE</span><span class="de-value" id="dePeak">—</span></div>
+    </div>
+
+    <div class="panel-box">
+      <div class="panel-label">Live Metrics</div>
+      <div class="mini-metric">
+        <div class="mini-m"><div class="mini-lbl">Age (days)</div><div class="mini-val" id="mAge">—</div></div>
+        <div class="mini-m"><div class="mini-lbl">Temperature °C</div><div class="mini-val" id="mTemp">—</div></div>
+      </div>
+    </div>
+
+    <div class="panel-box">
+      <div class="panel-label">Post-Analysis Action</div>
+      <div class="rec-buttons">
+        <button class="rec-btn sell" id="recSell">1. SELL</button>
+        <button class="rec-btn hold" id="recHold">2. HOLD</button>
+        <button class="rec-btn discard" id="recDiscard">3. DISCARD</button>
+      </div>
+    </div>
+
+    <div class="panel-box">
+      <div class="panel-label">Fish Record — Firebase</div>
+      <div class="log-grid" id="logGrid"></div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<script>
+const FIREBASE_CONFIG={
+  apiKey:"YOUR_API_KEY",
+  authDomain:"fish-digital-twin.firebaseapp.com",
+  databaseURL:"https://fish-digital-twin-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:"fish-digital-twin",
+  storageBucket:"fish-digital-twin.appspot.com",
+  messagingSenderId:"YOUR_SENDER_ID",
+  appId:"YOUR_APP_ID"
+};
+
+const DEMO={"WHOLE-FISH-001":{
+  species:"Whole Fish (Process 1)",
+  catchDate:new Date(Date.now()-5*864e5).toISOString().slice(0,10),
+  location:"University of Tsukuba — Bioproduction Lab",
+  processingMethod:"Whole Fish Analysis (Multi-Spectral)",
+  qualityScore:1,currentTemperature:8,
+  temperatureLog:"High thermal variance (1524.4). Poor storage detected.",
+  notes:"CRITICAL SPOILAGE. RGB+Thermal analysis completed.",
+  bodyDeltaE:18.49,eyeDeltaE:54.18,thermalVariance:1524.4,
+  samplesAnalyzed:6,spoilageStatus:"CRITICAL",
+  segmentationMethod:"Dynamic Auto-Targeting (Anatomical Targeter)",
+  lastAnalyzed:new Date().toISOString()
+}};
+
+let db=null,allFish={},selId=null,cur=0,playing=false,tmr=null;
+const MAX=15;
+const CV=document.getElementById('fishCv');
+const CX=CV.getContext('2d');
+const IW=660,IH=220;
+
+function init(){
+  try{
+    if(FIREBASE_CONFIG.apiKey==="YOUR_API_KEY") throw new Error();
+    firebase.initializeApp(FIREBASE_CONFIG);
+    db=firebase.database();
+    setConn(true);
+    db.ref('fishes').on('value',snap=>{
+      allFish=snap.val()||DEMO; buildCards();
+      if(selId&&allFish[selId]) renderAll();
+    },()=>{setConn(false);allFish=DEMO;buildCards();});
+  }catch{
+    setConn(false);
+    document.getElementById('demoNote').style.display='block';
+    allFish=DEMO; buildCards();
+  }
+}
+function setConn(live){
+  document.getElementById('connDot').className='conn-dot '+(live?'live':'off');
+  document.getElementById('connTxt').textContent=live?'Firebase connected':'Offline — demo mode';
+  document.getElementById('livePill').style.display=live?'inline-block':'none';
+}
+
+/* ── SPOILAGE: real ΔE first, then day formula ── */
+function calcAge(cd){return Math.max(0,Math.floor((Date.now()-new Date(cd))/864e5));}
+function calcSpoilage(days,fish){
+  if(fish){
+    const b=fish.bodyDeltaE,e=fish.eyeDeltaE;
+    if(b!=null&&e!=null) return +((Math.min(100,(b/6)*33)*0.4+Math.min(100,(e/10)*33)*0.6)).toFixed(1);
+  }
+  if(days<=7)  return Math.min(20,(days/7)*20);
+  if(days<=14) return 20+((days-7)/7)*20;
+  if(days<=30) return 40+((days-14)/16)*30;
+  if(days<=40) return 70+((days-30)/10)*20;
+  return Math.min(100,90+((days-40)/10)*10);
+}
+function calcSpoilDay(day,fish){
+  const real=calcSpoilage(0,fish);
+  if(fish&&fish.bodyDeltaE!=null){
+    const age=calcAge(fish.catchDate);
+    const start=Math.max(0,real-(age*3));
+    return Math.min(100,start+(real-start)*Math.pow(day/MAX,1.8)+day*1.2);
+  }
+  return calcSpoilage(day,null);
+}
+function statusInfo(sp){
+  if(sp<20) return{label:"FRESH",   bg:"rgba(0,232,122,.08)",fg:"#00e87a",brd:"rgba(0,232,122,.3)"};
+  if(sp<40) return{label:"GOOD",    bg:"rgba(255,176,32,.08)",fg:"#ffb020",brd:"rgba(255,176,32,.3)"};
+  if(sp<70) return{label:"MODERATE",bg:"rgba(255,140,0,.08)",fg:"#ff8c00",brd:"rgba(255,140,0,.3)"};
+  return         {label:"CRITICAL", bg:"rgba(255,78,78,.08)",fg:"#ff4e4e",brd:"rgba(255,78,78,.3)"};
+}
+function deClass(v,t){return v==null?'':v>t*3?'critical':v>t?'warning':'good';}
+function rec(sp){return sp<30?'sell':sp<60?'hold':'discard';}
+function eyeState(sp){return{eC:Math.min(1,sp/90),eR:sp>60?Math.min(1,(sp-60)/40):0};}
+function skinLbl(sp){return sp<10?"Bright silver":sp<25?"Silver":sp<40?"Slight dull":sp<55?"Dull grey":sp<70?"Grey-brown":sp<85?"Dark brown":"Near-black";}
+function eyeLbl(sp){return sp<15?"Crystal clear":sp<30?"Clear":sp<45?"Slight cloud":sp<60?"Milky":sp<75?"Red-cloudy":"Collapsed";}
+function desc(day,sp){
+  if(sp<10) return`Day ${day} — Fresh. Clean outline, vivid eye. No spoilage marks.`;
+  if(sp<25) return`Day ${day} — Still fresh. First faint marks near gill edge.`;
+  if(sp<40) return`Day ${day} — Early spoilage at gills. Eye beginning to cloud.`;
+  if(sp<55) return`Day ${day} — Spreading mid-body. Eye cloudy. Odour developing.`;
+  if(sp<70) return`Day ${day} — Wide coverage. Eye turning reddish. Degrading.`;
+  if(sp<85) return`Day ${day} — Heavy spoilage. Eye red-opaque. Strong odour.`;
+  return `Day ${day} — Complete putrefaction. Inedible and hazardous.`;
+}
+function markCol(sp){return sp<35?'#c87830':sp<55?'#9a5218':sp<75?'#6a2e08':'#3a1404';}
+
+/* ── CARDS ── */
+function buildCards(){
+  const row=document.getElementById('fishRow');
+  row.innerHTML='';
+  if(!Object.keys(allFish).length){row.innerHTML='<div style="color:var(--muted);padding:.5rem;font-size:13px">No fish records</div>';return;}
+  Object.entries(allFish).forEach(([id,fish])=>{
+    const age=calcAge(fish.catchDate);
+    const sp=calcSpoilage(age,fish);
+    const{label,bg,fg,brd}=statusInfo(sp);
+    const c=document.createElement('div');
+    c.className='fish-card'+(id===selId?' active':'');
+    c.innerHTML=`<div class="fc-id">${id}</div><div class="fc-sp">${fish.species}</div><div class="fc-sp">Day ${age}</div>
+      <div class="fc-pill" style="background:${bg};color:${fg};border-color:${brd}">${label} — ${Math.round(sp)}%</div>`;
+    c.onclick=()=>selectFish(id);
+    row.appendChild(c);
+  });
+  if(!selId&&Object.keys(allFish).length) selectFish(Object.keys(allFish)[0]);
+}
+function selectFish(id){
+  selId=id;
+  document.querySelectorAll('.fish-card').forEach((c,i)=>c.classList.toggle('active',Object.keys(allFish)[i]===id));
+  cur=Math.min(MAX,calcAge(allFish[id].catchDate));
+  document.getElementById('sl').value=cur;
+  renderAll();
+}
+
+/* ── RENDER ── */
+function renderAll(){
+  if(!selId||!allFish[selId]){document.getElementById('mainGrid').style.display='none';return;}
+  document.getElementById('mainGrid').style.display='grid';
+  const fish=allFish[selId];
+  const age=calcAge(fish.catchDate);
+  const sp=calcSpoilDay(cur,fish);
+  const{label,bg,fg,brd}=statusInfo(sp);
+  const{eC,eR}=eyeState(sp);
+  const r=rec(sp);
+
+  document.getElementById('fishId').textContent=selId;
+  document.getElementById('fishSub').textContent=`${fish.species} · ${fish.location||'—'} · Caught ${fish.catchDate}`;
+  const spl=document.getElementById('statusPill');
+  spl.textContent=`STATUS: ${label}`;spl.style.background=bg;spl.style.color=fg;spl.style.borderColor=fg;
+
+  document.getElementById('badgesRow').innerHTML=
+    `<span class="bdg" style="background:${bg};color:${fg};border-color:${brd}">Skin: ${skinLbl(sp)}</span>
+     <span class="bdg" style="background:${bg};color:${fg};border-color:${brd}">Eye: ${eyeLbl(sp)}</span>`;
+
+  const qs=fish.qualityScore||Math.round(5-sp/25);
+  document.getElementById('stars').innerHTML=[1,2,3,4,5].map(i=>`<span class="star ${i<=qs?'on':'off'}">★</span>`).join('');
+
+  const bde=fish.bodyDeltaE,ede=fish.eyeDeltaE,pv=fish.thermalVariance;
+  const db_=document.getElementById('deBody');db_.textContent=bde!=null?bde.toFixed(2):'—';db_.className='de-value '+deClass(bde,6);
+  const de_=document.getElementById('deEye');de_.textContent=ede!=null?ede.toFixed(2):'—';de_.className='de-value '+deClass(ede,10);
+  const dp_=document.getElementById('dePeak');dp_.textContent=pv!=null?pv.toFixed(1):'—';dp_.className='de-value '+deClass(pv,500);
+
+  document.getElementById('mAge').textContent=age;
+  document.getElementById('mTemp').textContent=fish.currentTemperature??'—';
+
+  const qc=sp<35?'#00e87a':sp<65?'#ffb020':'#ff4e4e';
+  const bc=sp<35?'#00e87a':sp<65?'#ffb020':'#ff4e4e';
+  setBar('bSkin',Math.max(1,100-sp),qc);setBar('bEye',Math.max(1,100-eC*100),qc);setBar('bSpoil',Math.round(sp),bc);
+  document.getElementById('descRow').textContent=desc(cur,sp);
+
+  ['sell','hold','discard'].forEach(x=>{
+    document.getElementById('rec'+x[0].toUpperCase()+x.slice(1)).classList.toggle('active',x===r);
+  });
+
+  const logs=[['Catch date',fish.catchDate||'—'],['Location',fish.location||'—'],
+    ['Processing',fish.processingMethod||'—'],['Quality',(fish.qualityScore||'—')+'/5'],
+    ['Samples',fish.samplesAnalyzed||'—'],['Method',fish.segmentationMethod||'—'],
+    ['Temp log',fish.temperatureLog||'—'],['Last analysed',fish.lastAnalyzed?fish.lastAnalyzed.slice(0,16).replace('T',' '):'—']];
+  document.getElementById('logGrid').innerHTML=logs.map(([k,v])=>
+    `<div class="log-item"><span class="log-key">${k}</span><span class="log-val">${v}</span></div>`).join('');
+
+  buildStrip();
+  document.getElementById('slv').textContent=`${cur}/15`;
+  document.getElementById('sl').value=cur;
+  drawFish(sp,eC,eR);
+}
+function setBar(id,pct,col){const el=document.getElementById(id);el.style.width=pct+'%';el.style.background=col;}
+
+function buildStrip(){
+  const strip=document.getElementById('dayStrip');strip.innerHTML='';
+  for(let i=0;i<=MAX;i++){
+    const sp=calcSpoilDay(i,allFish[selId]);
+    const{fg,bg}=statusInfo(sp);
+    const el=document.createElement('div');
+    el.className='ds'+(i===cur?' on':'');
+    el.style.background=bg;
+    el.innerHTML=`<div class="dd" style="color:${fg}">D${i}</div><div class="dp" style="color:${fg}">${Math.round(sp)}%</div>`;
+    el.onclick=()=>{if(playing)sP();gT(i);};
+    strip.appendChild(el);
+  }
+  const ac=strip.querySelector('.on');
+  if(ac) ac.scrollIntoView({inline:'nearest',block:'nearest'});
+}
+
+/* ── FISH DRAWING ── */
+function mkRng(seed){let s=(seed%2147483647+2147483647)%2147483647||1;return()=>{s=s*16807%2147483647;return(s-1)/2147483646;};}
+function drawMark(ctx,x,y,len,angle,col,alpha,seed){
+  const rg=mkRng(seed);
+  ctx.save();ctx.globalAlpha=alpha;ctx.strokeStyle=col;ctx.lineWidth=0.9;ctx.lineCap='round';
+  ctx.beginPath();let px=x,py=y,a=angle;ctx.moveTo(px,py);
+  const segs=Math.max(4,Math.floor(len/4));
+  for(let i=0;i<segs;i++){
+    a+=(rg()-0.5)*0.5;const step=len/segs;
+    px+=Math.cos(a)*step;py+=Math.sin(a)*step;ctx.lineTo(px,py);
+    if(i%3===1){const nx=Math.cos(a+Math.PI/2),ny=Math.sin(a+Math.PI/2);
+      ctx.moveTo(px-nx*2.5,py-ny*2.5);ctx.lineTo(px+nx*2.5,py+ny*2.5);ctx.moveTo(px,py);}
+  }
+  ctx.stroke();ctx.restore();
+}
+const ZONES=[
+  {cx:500,cy:110,rx:60,ry:46,s:0, f:35},{cx:462,cy:70, rx:48,ry:26,s:5, f:40},
+  {cx:460,cy:150,rx:48,ry:26,s:5, f:40},{cx:396,cy:50, rx:52,ry:21,s:15,f:50},
+  {cx:394,cy:170,rx:50,ry:21,s:15,f:50},{cx:324,cy:42, rx:50,ry:20,s:25,f:60},
+  {cx:322,cy:178,rx:48,ry:20,s:25,f:60},{cx:252,cy:50, rx:46,ry:22,s:35,f:70},
+  {cx:250,cy:170,rx:44,ry:22,s:35,f:70},{cx:184,cy:68, rx:42,ry:25,s:45,f:80},
+  {cx:182,cy:152,rx:40,ry:25,s:45,f:80},{cx:128,cy:96, rx:36,ry:26,s:55,f:88},
+  {cx:126,cy:124,rx:36,ry:26,s:55,f:88},{cx:84, cy:110,rx:44,ry:44,s:65,f:95},
+];
+function fishPath(){
+  const p=new Path2D();
+  function sy(y){return(y-150)*0.72+110;}
+  p.moveTo(572,sy(150));
+  p.bezierCurveTo(568,sy(124),548,sy(96),518,sy(76));p.bezierCurveTo(496,sy(60),468,sy(50),438,sy(44));
+  p.bezierCurveTo(420,sy(40),408,sy(34),396,sy(22));p.bezierCurveTo(382,sy(8),364,sy(2),346,sy(4));
+  p.bezierCurveTo(328,sy(6),314,sy(14),306,sy(26));p.bezierCurveTo(298,sy(36),292,sy(44),280,sy(50));
+  p.bezierCurveTo(256,sy(56),224,sy(62),192,sy(70));p.bezierCurveTo(160,sy(78),134,sy(90),116,sy(108));
+  p.bezierCurveTo(106,sy(118),100,sy(132),100,sy(150));
+  p.bezierCurveTo(100,sy(144),96,sy(134),86,sy(118));p.bezierCurveTo(76,sy(102),56,sy(82),36,sy(62));
+  p.bezierCurveTo(52,sy(90),64,sy(116),72,sy(138));p.bezierCurveTo(76,sy(144),78,sy(148),78,sy(150));
+  p.bezierCurveTo(78,sy(152),76,sy(156),72,sy(162));p.bezierCurveTo(64,sy(184),52,sy(210),36,sy(238));
+  p.bezierCurveTo(56,sy(218),76,sy(198),86,sy(182));p.bezierCurveTo(96,sy(166),100,sy(156),100,sy(150));
+  p.bezierCurveTo(100,sy(168),106,sy(182),116,sy(192));p.bezierCurveTo(134,sy(210),160,sy(222),192,sy(230));
+  p.bezierCurveTo(224,sy(238),258,sy(244),280,sy(250));p.bezierCurveTo(294,sy(252),306,sy(258),316,sy(270));
+  p.bezierCurveTo(322,sy(276),330,sy(276),336,sy(270));p.bezierCurveTo(346,sy(258),356,sy(252),368,sy(250));
+  p.bezierCurveTo(400,sy(246),438,sy(252),468,sy(244));p.bezierCurveTo(498,sy(236),524,sy(218),540,sy(198));
+  p.bezierCurveTo(548,sy(192),550,sy(182),546,sy(172));p.bezierCurveTo(542,sy(162),544,sy(156),550,sy(152));
+  p.bezierCurveTo(556,sy(148),560,sy(150),566,sy(150));p.bezierCurveTo(570,sy(150),572,sy(150),572,sy(150));
+  p.closePath();return p;
+}
+function drawFish(sp,eC,eR){
+  const W=CV.offsetWidth||660,H=Math.round(W*(IH/IW));
+  CV.width=W;CV.height=H;const sc=W/IW;
+  CX.clearRect(0,0,W,H);CX.fillStyle='#000';CX.fillRect(0,0,W,H);
+  CX.save();CX.scale(sc,sc);
+  const fish=fishPath(),col=markCol(sp);
+  CX.save();CX.clip(fish);
+  for(const z of ZONES){
+    if(sp<=z.s) continue;
+    const t=Math.min(1,(sp-z.s)/(z.f-z.s));if(t<=0) continue;
+    const count=Math.floor(t*t*100)+2,zrng=mkRng(z.cx*31+z.cy*17);
+    for(let i=0;i<count;i++){
+      const ang=zrng()*Math.PI*2,rad=Math.sqrt(zrng());
+      const bx=z.cx+rad*z.rx*(zrng()*2-1),by=z.cy+rad*z.ry*(zrng()*2-1);
+      drawMark(CX,bx,by,5+zrng()*15*Math.max(0.4,t),zrng()*Math.PI*2,col,Math.min(0.92,0.28+t*0.68),i*113+z.cx+Math.floor(sp));
+    }
+  }
+  if(sp>=65){const extra=Math.floor((sp-60)*2.2),erng=mkRng(Math.floor(sp)*97+511);
+    for(let i=0;i<extra;i++) drawMark(CX,70+erng()*490,20+erng()*180,3+erng()*14,erng()*Math.PI*2,col,0.22+erng()*0.45,i*71+Math.floor(sp)*19);}
+  CX.restore();
+  CX.strokeStyle='#ffffff';CX.lineWidth=2.2;CX.lineJoin='round';CX.lineCap='round';CX.stroke(fish);
+  function sy(y){return(y-150)*0.72+110;}
+  const ex=504,ey=sy(110),er=13;
+  CX.strokeStyle='#fff';CX.lineWidth=2.0;CX.beginPath();CX.arc(ex,ey,er,0,Math.PI*2);CX.stroke();
+  if(eC<0.45){
+    CX.fillStyle='#000';CX.beginPath();CX.arc(ex,ey,er-1,0,Math.PI*2);CX.fill();
+    CX.fillStyle='#fff';CX.beginPath();CX.arc(ex,ey,Math.max(1.5,er*0.38*(1-eC*0.5)),0,Math.PI*2);CX.fill();
+    if(eC<0.3){CX.globalAlpha=(1-eC/0.3)*0.6;CX.beginPath();CX.arc(ex-4,ey-4,2.2,0,Math.PI*2);CX.fill();CX.globalAlpha=1;}
+  }else{
+    if(eC>0){CX.fillStyle=`rgba(135,122,112,${eC*0.82})`;CX.beginPath();CX.arc(ex,ey,er-1,0,Math.PI*2);CX.fill();}
+    if(eR>0){CX.fillStyle=`rgba(136,16,12,${eR*0.88})`;CX.beginPath();CX.arc(ex,ey,er-1,0,Math.PI*2);CX.fill();}
+    CX.strokeStyle=`rgba(255,255,255,${Math.max(0.1,1-eC)})`;CX.lineWidth=1.8;CX.beginPath();CX.arc(ex,ey,er,0,Math.PI*2);CX.stroke();
+  }
+  CX.restore();
+}
+
+/* ── CONTROLS ── */
+function gT(day){cur=Math.max(0,Math.min(MAX,day));renderAll();}
+function go(d){if(playing)sP();gT(cur+d);}
+function tp(){if(playing)sP();else stP();}
+function stP(){playing=true;document.getElementById('playBtn').textContent='⏸ Pause';document.getElementById('playBtn').classList.add('on');if(cur>=MAX)cur=0;step();}
+function sP(){playing=false;document.getElementById('playBtn').textContent='▶ Play';document.getElementById('playBtn').classList.remove('on');clearTimeout(tmr);}
+function step(){if(!playing)return;renderAll();if(cur>=MAX){sP();return;}cur++;const ms={Slow:1400,Normal:800,Fast:280}[document.getElementById('spd').value]||800;tmr=setTimeout(step,ms);}
+
+window.addEventListener('resize',()=>{if(selId&&allFish[selId]){const sp=calcSpoilDay(cur,allFish[selId]);const{eC,eR}=eyeState(sp);drawFish(sp,eC,eR);}});
+init();
 </script>
-
 </body>
 </html>
