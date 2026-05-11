@@ -345,23 +345,18 @@ function spoilageFromDeltaE(fish) {
 // Day 0 = fresh (0%). Day = currentAge = measured spoilage %.
 // This drives the fish drawing and all UI.
 function spoilAtDay(day, fish) {
-  const age = calcAge(fish.catchDate);
+  // ALWAYS spread Day 0 (fresh) → Day MAX (full spoilage) across the full slider.
+  // This guarantees the animation plays from clean → fully spoiled every time.
+  // The real ΔE value defines WHAT the final spoilage state is.
+  // The day slider defines HOW FAR through that journey we are showing.
   const finalSpoil = spoilageFromDeltaE(fish);
+  const target = finalSpoil != null ? finalSpoil : 100;
 
-  if (finalSpoil != null && age > 0) {
-    // Linear ramp from 0% (day 0) to finalSpoil% (day = age)
-    // Beyond current age: extrapolate gently
-    const ratePerDay = finalSpoil / age;
-    const sp = ratePerDay * day;
-    return +Math.min(100, sp).toFixed(1);
-  }
-
-  // Fallback: day-based formula (when no ΔE data)
-  if (day <= 7)  return Math.min(20, (day/7)*20);
-  if (day <= 14) return 20 + ((day-7)/7)*20;
-  if (day <= 30) return 40 + ((day-14)/16)*30;
-  if (day <= 40) return 70 + ((day-30)/10)*20;
-  return Math.min(100, 90 + ((day-40)/10)*10);
+  // Ease-in curve: slow at first (fish looks fresh longer), accelerates toward end
+  // t = 0 at Day 0, t = 1 at Day MAX
+  const t = day / MAX;
+  const eased = t * t * (3 - 2 * t); // smooth-step: cubic ease-in-out
+  return +Math.min(100, eased * target).toFixed(1);
 }
 
 // Spoilage card value (uses real ΔE if available, else day-based)
@@ -468,9 +463,9 @@ function selectFish(id) {
   document.querySelectorAll('.fish-card').forEach((c, i) => {
     c.classList.toggle('active', Object.keys(allFish)[i] === id);
   });
-  // Jump slider to current real age of the fish
-  cur = Math.min(MAX, calcAge(allFish[id].catchDate));
-  document.getElementById('sl').value = cur;
+  // Always start at Day 0 (fresh) so animation plays from clean to spoiled
+  cur = 0;
+  document.getElementById('sl').value = 0;
   renderAll();
 }
 
