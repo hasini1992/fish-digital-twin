@@ -16,33 +16,41 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;overflow-x:hidden}
 body::before{content:'';position:fixed;inset:0;
-  background-image:linear-gradient(rgba(0,200,255,.03)1px,transparent 1px),linear-gradient(90deg,rgba(0,200,255,.03)1px,transparent 1px);
+  background-image:linear-gradient(rgba(0,200,255,.03)1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,200,255,.03)1px,transparent 1px);
   background-size:40px 40px;pointer-events:none;z-index:0}
 .app{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:1.2rem}
 
 /* TOP BAR */
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:.6rem 1.2rem;
-  background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:1rem;gap:12px;flex-wrap:wrap}
-.topbar-title{font-family:'Space Mono',monospace;font-size:14px;font-weight:700;color:var(--accent);letter-spacing:2px;text-transform:uppercase}
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  margin-bottom:1rem;gap:12px;flex-wrap:wrap}
+.topbar-title{font-family:'Space Mono',monospace;font-size:14px;font-weight:700;
+  color:var(--accent);letter-spacing:2px;text-transform:uppercase}
 .conn-row{display:flex;align-items:center;gap:8px}
-.conn-dot{width:8px;height:8px;border-radius:50%;background:#444;flex-shrink:0;transition:all .4s}
+.conn-dot{width:8px;height:8px;border-radius:50%;background:#444;transition:all .4s}
 .conn-dot.live{background:var(--green);box-shadow:0 0 8px var(--green)}
 .conn-dot.off{background:var(--red)}
 .conn-txt{font-size:11px;color:var(--muted);font-family:'Space Mono',monospace}
-.live-pill{font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(0,232,122,.08);color:var(--green);border:1px solid rgba(0,232,122,.3);font-family:'Space Mono',monospace;letter-spacing:1px;display:none}
+.live-pill{font-size:10px;padding:2px 8px;border-radius:20px;
+  background:rgba(0,232,122,.08);color:var(--green);border:1px solid rgba(0,232,122,.3);
+  font-family:'Space Mono',monospace;letter-spacing:1px;display:none}
 
 /* FISH SELECTOR */
 .fish-selector{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:1rem}
-.fish-card{min-width:150px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;cursor:pointer;transition:all .2s;flex-shrink:0}
+.fish-card{min-width:150px;background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;padding:10px 14px;cursor:pointer;transition:all .2s;flex-shrink:0}
 .fish-card:hover{border-color:var(--accent);transform:translateY(-1px)}
 .fish-card.active{border-color:var(--accent);background:var(--surface2)}
 .fc-id{font-size:12px;font-weight:700;color:var(--accent);font-family:'Space Mono',monospace;margin-bottom:3px}
 .fc-sp{font-size:11px;color:var(--muted);margin-bottom:2px}
-.fc-pill{display:inline-block;font-size:10px;padding:2px 8px;border-radius:20px;border:1px solid;margin-top:5px;font-weight:600;letter-spacing:.5px}
+.fc-pill{display:inline-block;font-size:10px;padding:2px 8px;border-radius:20px;
+  border:1px solid;margin-top:5px;font-weight:600;letter-spacing:.5px}
 
 /* CONTROLS */
 .ctrl-row{display:flex;align-items:center;gap:8px;margin-bottom:.6rem;flex-wrap:wrap}
-.cbtn{padding:5px 14px;border-radius:8px;border:1px solid var(--border);background:transparent;cursor:pointer;font-size:12px;color:#ccc;font-family:'Outfit',sans-serif;transition:all .2s}
+.cbtn{padding:5px 14px;border-radius:8px;border:1px solid var(--border);background:transparent;
+  cursor:pointer;font-size:12px;color:#ccc;transition:all .2s}
 .cbtn:hover{background:var(--surface2);border-color:#2a4060}
 .cbtn.play{background:#0a2a4a;color:var(--accent);border-color:var(--accent)}
 .cbtn.play.on{background:#3a0a0a;color:var(--red);border-color:var(--red)}
@@ -50,40 +58,51 @@ body::before{content:'';position:fixed;inset:0;
 .srow label{font-size:11px;color:var(--muted);white-space:nowrap;font-family:'Space Mono',monospace}
 input[type=range]{flex:1;accent-color:var(--accent)}
 .day-strip{display:flex;gap:4px;overflow-x:auto;padding-bottom:4px;margin-bottom:.8rem}
-.ds{min-width:40px;border-radius:6px;padding:4px 2px;text-align:center;cursor:pointer;border:1.5px solid transparent;flex-shrink:0;background:var(--surface)}
+.ds{min-width:40px;border-radius:6px;padding:4px 2px;text-align:center;
+  cursor:pointer;border:1.5px solid transparent;flex-shrink:0;background:var(--surface)}
 .ds.on{border-color:var(--accent)}
 .ds .dd{font-size:10px;font-weight:600;color:var(--muted)}
 .ds .dp{font-size:9px;color:var(--muted)}
 
 /* MAIN GRID */
-.main-grid{display:grid;grid-template-columns:1fr 320px;gap:1rem;margin-bottom:1rem}
+.main-grid{display:grid;grid-template-columns:1fr 310px;gap:1rem;margin-bottom:1rem}
 @media(max-width:700px){.main-grid{grid-template-columns:1fr}}
 
 /* FISH PANEL */
-.fish-panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1rem;display:flex;flex-direction:column;gap:.75rem}
+.fish-panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  padding:1rem;display:flex;flex-direction:column;gap:.75rem}
 .fish-panel-header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .fid{font-size:20px;font-weight:700;color:#fff;font-family:'Space Mono',monospace}
 .fsub{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.4}
-.status-pill{font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px;border:2px solid;letter-spacing:1px;font-family:'Space Mono',monospace;white-space:nowrap}
+.status-pill{font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px;
+  border:2px solid;letter-spacing:1px;font-family:'Space Mono',monospace;white-space:nowrap}
 .badges-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
 .bdg{font-size:10px;font-weight:500;padding:3px 10px;border-radius:20px;border:1px solid}
-canvas#fishCv{display:block;width:100%;border-radius:10px;background:#000}
+
+/* CANVAS WRAPPER — fixes offsetWidth=0 on first paint */
+.canvas-wrap{width:100%;background:#000;border-radius:10px;overflow:hidden;
+  aspect-ratio:3/1;position:relative}
+canvas#fishCv{position:absolute;inset:0;width:100%;height:100%}
+
 .bar-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .bar-item{background:var(--surface2);border-radius:8px;padding:8px 10px;border:1px solid var(--border)}
-.bar-lbl{font-size:10px;color:var(--muted);margin-bottom:6px;font-family:'Space Mono',monospace;letter-spacing:.5px}
+.bar-lbl{font-size:10px;color:var(--muted);margin-bottom:6px;font-family:'Space Mono',monospace}
 .bar-track{background:#0a1520;border-radius:3px;height:4px}
 .bar-fill{height:4px;border-radius:3px;transition:width .7s ease,background .7s ease}
-.desc-row{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--muted);line-height:1.6}
+.desc-row{background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+  padding:10px 14px;font-size:12px;color:var(--muted);line-height:1.6}
 
 /* RIGHT PANEL */
 .right-panel{display:flex;flex-direction:column;gap:.8rem}
 .panel-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
-.panel-label{font-size:10px;font-weight:600;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:10px;font-family:'Space Mono',monospace}
-.stars{display:flex;gap:5px;margin-bottom:.25rem}
+.panel-label{font-size:10px;font-weight:600;letter-spacing:1.5px;color:var(--muted);
+  text-transform:uppercase;margin-bottom:10px;font-family:'Space Mono',monospace}
+.stars{display:flex;gap:5px}
 .star{font-size:22px}
 .star.on{color:#ffb020}
 .star.off{color:#1a2e40}
-.de-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+.de-row{display:flex;justify-content:space-between;align-items:center;
+  padding:8px 0;border-bottom:1px solid var(--border)}
 .de-row:last-child{border-bottom:none}
 .de-label{font-size:11px;color:var(--muted);font-family:'Space Mono',monospace}
 .de-value{font-size:18px;font-weight:700;font-family:'Space Mono',monospace}
@@ -91,7 +110,9 @@ canvas#fishCv{display:block;width:100%;border-radius:10px;background:#000}
 .de-value.warning{color:var(--amber)}
 .de-value.good{color:var(--green)}
 .rec-buttons{display:flex;flex-direction:column;gap:6px;margin-top:8px}
-.rec-btn{padding:9px 14px;border-radius:8px;border:1px solid;font-size:12px;font-weight:600;cursor:pointer;font-family:'Space Mono',monospace;letter-spacing:.5px;background:transparent;transition:all .2s;text-align:left;display:flex;align-items:center;gap:8px}
+.rec-btn{padding:9px 14px;border-radius:8px;border:1px solid;font-size:12px;font-weight:600;
+  cursor:pointer;font-family:'Space Mono',monospace;letter-spacing:.5px;background:transparent;
+  transition:all .2s;text-align:left}
 .rec-btn.sell{border-color:#1a2e40;color:#2a4060}
 .rec-btn.hold{border-color:#1a2e40;color:#2a4060}
 .rec-btn.discard{border-color:var(--red);color:var(--red);background:rgba(255,78,78,.06)}
@@ -99,20 +120,24 @@ canvas#fishCv{display:block;width:100%;border-radius:10px;background:#000}
 .rec-btn.hold.active{background:var(--amber);border-color:var(--amber);color:#000}
 .rec-btn.discard.active{background:var(--red);color:#fff}
 .mini-metric{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.mini-m{display:flex;flex-direction:column;gap:2px}
-.mini-val{font-size:18px;font-weight:700;font-family:'Space Mono',monospace;color:#fff}
-.mini-lbl{font-size:10px;color:var(--muted)}
-.log-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px}
+.mini-m .mv{font-size:18px;font-weight:700;font-family:'Space Mono',monospace;color:#fff}
+.mini-m .ml{font-size:10px;color:var(--muted);margin-bottom:3px}
+.log-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .log-item{display:flex;flex-direction:column;gap:2px}
 .log-key{color:var(--muted);font-size:10px;font-family:'Space Mono',monospace}
-.log-val{color:#aac8e0}
+.log-val{color:#aac8e0;font-size:11px}
 
 /* MISC */
 .loading{text-align:center;padding:2rem;color:var(--muted);font-size:13px}
-.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin-right:6px;vertical-align:middle}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border);
+  border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;
+  margin-right:6px;vertical-align:middle}
 @keyframes spin{to{transform:rotate(360deg)}}
-.demo-note{background:rgba(255,176,32,.06);border:1px solid rgba(255,176,32,.2);border-radius:8px;padding:8px 12px;font-size:11px;color:var(--amber);margin-bottom:.75rem;font-family:'Space Mono',monospace}
-select{font-size:11px;padding:3px 6px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:#ccc}
+.demo-note{background:rgba(255,176,32,.06);border:1px solid rgba(255,176,32,.2);
+  border-radius:8px;padding:8px 12px;font-size:11px;color:var(--amber);
+  margin-bottom:.75rem;font-family:'Space Mono',monospace}
+select{font-size:11px;padding:3px 6px;border-radius:6px;border:1px solid var(--border);
+  background:var(--surface);color:#ccc}
 </style>
 </head>
 <body>
@@ -127,14 +152,19 @@ select{font-size:11px;padding:3px 6px;border-radius:6px;border:1px solid var(--b
   </div>
 </div>
 
-<div class="demo-note" id="demoNote" style="display:none">⚠ Firebase not configured — showing demo data. Update FIREBASE_CONFIG to connect live.</div>
+<div class="demo-note" id="demoNote" style="display:none">
+  ⚠ Firebase not configured — showing demo data. Add serviceAccountKey and update FIREBASE_CONFIG to go live.
+</div>
 
-<div class="fish-selector" id="fishRow"><div class="loading"><span class="spinner"></span>Loading records…</div></div>
+<div class="fish-selector" id="fishRow">
+  <div class="loading"><span class="spinner"></span>Loading records…</div>
+</div>
 
+<!-- DAY CONTROLS -->
 <div class="ctrl-row">
-  <button class="cbtn" onclick="go(-1)">Prev</button>
+  <button class="cbtn" onclick="go(-1)">◀ Prev</button>
   <button class="cbtn play" id="playBtn" onclick="tp()">▶ Play</button>
-  <button class="cbtn" onclick="go(1)">Next</button>
+  <button class="cbtn" onclick="go(1)">Next ▶</button>
   <label style="font-size:11px;color:var(--muted);margin-left:4px">Speed:</label>
   <select id="spd"><option>Slow</option><option selected>Normal</option><option>Fast</option></select>
 </div>
@@ -145,9 +175,10 @@ select{font-size:11px;padding:3px 6px;border-radius:6px;border:1px solid var(--b
 </div>
 <div class="day-strip" id="dayStrip"></div>
 
+<!-- MAIN GRID -->
 <div class="main-grid" id="mainGrid" style="display:none">
 
-  <!-- LEFT: animated fish -->
+  <!-- LEFT: FISH -->
   <div class="fish-panel">
     <div class="fish-panel-header">
       <div>
@@ -157,7 +188,12 @@ select{font-size:11px;padding:3px 6px;border-radius:6px;border:1px solid var(--b
       </div>
       <div class="status-pill" id="statusPill">—</div>
     </div>
-    <canvas id="fishCv"></canvas>
+
+    <!-- Canvas wrapper with fixed aspect ratio so offsetWidth is always correct -->
+    <div class="canvas-wrap" id="canvasWrap">
+      <canvas id="fishCv"></canvas>
+    </div>
+
     <div class="bar-grid">
       <div class="bar-item"><div class="bar-lbl">Skin quality</div><div class="bar-track"><div class="bar-fill" id="bSkin"></div></div></div>
       <div class="bar-item"><div class="bar-lbl">Eye clarity</div><div class="bar-track"><div class="bar-fill" id="bEye"></div></div></div>
@@ -184,8 +220,8 @@ select{font-size:11px;padding:3px 6px;border-radius:6px;border:1px solid var(--b
     <div class="panel-box">
       <div class="panel-label">Live Metrics</div>
       <div class="mini-metric">
-        <div class="mini-m"><div class="mini-lbl">Age (days)</div><div class="mini-val" id="mAge">—</div></div>
-        <div class="mini-m"><div class="mini-lbl">Temperature °C</div><div class="mini-val" id="mTemp">—</div></div>
+        <div class="mini-m"><div class="ml">Age (days)</div><div class="mv" id="mAge">—</div></div>
+        <div class="mini-m"><div class="ml">Temperature °C</div><div class="mv" id="mTemp">—</div></div>
       </div>
     </div>
 
@@ -199,7 +235,7 @@ select{font-size:11px;padding:3px 6px;border-radius:6px;border:1px solid var(--b
     </div>
 
     <div class="panel-box">
-      <div class="panel-label">Fish Record — Firebase</div>
+      <div class="panel-label">Fish Record</div>
       <div class="log-grid" id="logGrid"></div>
     </div>
 
@@ -208,288 +244,611 @@ select{font-size:11px;padding:3px 6px;border-radius:6px;border:1px solid var(--b
 </div>
 
 <script>
-const FIREBASE_CONFIG={
-  apiKey:"YOUR_API_KEY",
-  authDomain:"fish-digital-twin.firebaseapp.com",
-  databaseURL:"https://fish-digital-twin-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId:"fish-digital-twin",
-  storageBucket:"fish-digital-twin.appspot.com",
-  messagingSenderId:"YOUR_SENDER_ID",
-  appId:"YOUR_APP_ID"
+// ═══════════════════════════════════════════════════════════
+//  FIREBASE CONFIG  — replace with your real credentials
+// ═══════════════════════════════════════════════════════════
+const FIREBASE_CONFIG = {
+  apiKey:            "YOUR_API_KEY",
+  authDomain:        "fish-digital-twin.firebaseapp.com",
+  databaseURL:       "https://fish-digital-twin-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:         "fish-digital-twin",
+  storageBucket:     "fish-digital-twin.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId:             "YOUR_APP_ID"
 };
 
-const DEMO={"WHOLE-FISH-001":{
-  species:"Whole Fish (Process 1)",
-  catchDate:new Date(Date.now()-5*864e5).toISOString().slice(0,10),
-  location:"University of Tsukuba — Bioproduction Lab",
-  processingMethod:"Whole Fish Analysis (Multi-Spectral)",
-  qualityScore:1,currentTemperature:8,
-  temperatureLog:"High thermal variance (1524.4). Poor storage detected.",
-  notes:"CRITICAL SPOILAGE. RGB+Thermal analysis completed.",
-  bodyDeltaE:18.49,eyeDeltaE:54.18,thermalVariance:1524.4,
-  samplesAnalyzed:6,spoilageStatus:"CRITICAL",
-  segmentationMethod:"Dynamic Auto-Targeting (Anatomical Targeter)",
-  lastAnalyzed:new Date().toISOString()
-}};
+// ═══════════════════════════════════════════════════════════
+//  DEMO DATA  — exact copy of what update_digital_twin writes
+// ═══════════════════════════════════════════════════════════
+const DEMO = {
+  "WHOLE-FISH-001": {
+    species:          "Whole Fish (Process 1)",
+    catchDate:        new Date(Date.now() - 5*864e5).toISOString().slice(0,10),
+    location:         "University of Tsukuba — Bioproduction Lab",
+    processingMethod: "Whole Fish Analysis (Multi-Spectral)",
+    qualityScore:     1,
+    currentTemperature: 8,
+    temperatureLog:   "High thermal variance (1524.4). Poor storage detected.",
+    notes:            "CRITICAL SPOILAGE. RGB+Thermal analysis completed. 6 samples.",
+    bodyDeltaE:       18.49,
+    eyeDeltaE:        54.18,
+    thermalVariance:  1524.4,
+    samplesAnalyzed:  6,
+    spoilageStatus:   "CRITICAL",
+    segmentationMethod: "Dynamic Auto-Targeting (Anatomical Targeter)",
+    lastAnalyzed:     new Date().toISOString()
+  }
+};
 
-let db=null,allFish={},selId=null,cur=0,playing=false,tmr=null;
-const MAX=15;
-const CV=document.getElementById('fishCv');
-const CX=CV.getContext('2d');
-const IW=660,IH=220;
+// ═══════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════
+let db = null, allFish = {}, selId = null;
+let cur = 0, playing = false, tmr = null;
+const MAX = 15;
+const CV  = document.getElementById('fishCv');
+const CX  = CV.getContext('2d');
 
-function init(){
-  try{
-    if(FIREBASE_CONFIG.apiKey==="YOUR_API_KEY") throw new Error();
+// ═══════════════════════════════════════════════════════════
+//  FIREBASE
+// ═══════════════════════════════════════════════════════════
+function init() {
+  try {
+    if (FIREBASE_CONFIG.apiKey === "YOUR_API_KEY") throw new Error("not configured");
     firebase.initializeApp(FIREBASE_CONFIG);
-    db=firebase.database();
+    db = firebase.database();
     setConn(true);
-    db.ref('fishes').on('value',snap=>{
-      allFish=snap.val()||DEMO; buildCards();
-      if(selId&&allFish[selId]) renderAll();
-    },()=>{setConn(false);allFish=DEMO;buildCards();});
-  }catch{
+    db.ref('fishes').on('value', snap => {
+      allFish = snap.val() || DEMO;
+      buildCards();
+      if (selId && allFish[selId]) renderAll();
+    }, () => { setConn(false); useDemo(); });
+  } catch(e) {
     setConn(false);
-    document.getElementById('demoNote').style.display='block';
-    allFish=DEMO; buildCards();
+    useDemo();
   }
 }
-function setConn(live){
-  document.getElementById('connDot').className='conn-dot '+(live?'live':'off');
-  document.getElementById('connTxt').textContent=live?'Firebase connected':'Offline — demo mode';
-  document.getElementById('livePill').style.display=live?'inline-block':'none';
+function useDemo() {
+  document.getElementById('demoNote').style.display = 'block';
+  allFish = DEMO;
+  buildCards();
+}
+function setConn(live) {
+  document.getElementById('connDot').className = 'conn-dot ' + (live ? 'live' : 'off');
+  document.getElementById('connTxt').textContent = live ? 'Firebase connected' : 'Offline — demo mode';
+  document.getElementById('livePill').style.display = live ? 'inline-block' : 'none';
 }
 
-/* ── SPOILAGE: real ΔE first, then day formula ── */
-function calcAge(cd){return Math.max(0,Math.floor((Date.now()-new Date(cd))/864e5));}
-function calcSpoilage(days,fish){
-  if(fish){
-    const b=fish.bodyDeltaE,e=fish.eyeDeltaE;
-    if(b!=null&&e!=null) return +((Math.min(100,(b/6)*33)*0.4+Math.min(100,(e/10)*33)*0.6)).toFixed(1);
-  }
-  if(days<=7)  return Math.min(20,(days/7)*20);
-  if(days<=14) return 20+((days-7)/7)*20;
-  if(days<=30) return 40+((days-14)/16)*30;
-  if(days<=40) return 70+((days-30)/10)*20;
-  return Math.min(100,90+((days-40)/10)*10);
+// ═══════════════════════════════════════════════════════════
+//  SPOILAGE MATHS
+//
+//  Key fix: spoilage % is always calculated from REAL ΔE values
+//  when available. The day slider shows the PROGRESSION toward
+//  that final measured state — Day 0 = fresh, Day=age = measured state.
+// ═══════════════════════════════════════════════════════════
+function calcAge(cd) {
+  return Math.max(0, Math.floor((Date.now() - new Date(cd)) / 864e5));
 }
-function calcSpoilDay(day,fish){
-  const real=calcSpoilage(0,fish);
-  if(fish&&fish.bodyDeltaE!=null){
-    const age=calcAge(fish.catchDate);
-    const start=Math.max(0,real-(age*3));
-    return Math.min(100,start+(real-start)*Math.pow(day/MAX,1.8)+day*1.2);
-  }
-  return calcSpoilage(day,null);
-}
-function statusInfo(sp){
-  if(sp<20) return{label:"FRESH",   bg:"rgba(0,232,122,.08)",fg:"#00e87a",brd:"rgba(0,232,122,.3)"};
-  if(sp<40) return{label:"GOOD",    bg:"rgba(255,176,32,.08)",fg:"#ffb020",brd:"rgba(255,176,32,.3)"};
-  if(sp<70) return{label:"MODERATE",bg:"rgba(255,140,0,.08)",fg:"#ff8c00",brd:"rgba(255,140,0,.3)"};
-  return         {label:"CRITICAL", bg:"rgba(255,78,78,.08)",fg:"#ff4e4e",brd:"rgba(255,78,78,.3)"};
-}
-function deClass(v,t){return v==null?'':v>t*3?'critical':v>t?'warning':'good';}
-function rec(sp){return sp<30?'sell':sp<60?'hold':'discard';}
-function eyeState(sp){return{eC:Math.min(1,sp/90),eR:sp>60?Math.min(1,(sp-60)/40):0};}
-function skinLbl(sp){return sp<10?"Bright silver":sp<25?"Silver":sp<40?"Slight dull":sp<55?"Dull grey":sp<70?"Grey-brown":sp<85?"Dark brown":"Near-black";}
-function eyeLbl(sp){return sp<15?"Crystal clear":sp<30?"Clear":sp<45?"Slight cloud":sp<60?"Milky":sp<75?"Red-cloudy":"Collapsed";}
-function desc(day,sp){
-  if(sp<10) return`Day ${day} — Fresh. Clean outline, vivid eye. No spoilage marks.`;
-  if(sp<25) return`Day ${day} — Still fresh. First faint marks near gill edge.`;
-  if(sp<40) return`Day ${day} — Early spoilage at gills. Eye beginning to cloud.`;
-  if(sp<55) return`Day ${day} — Spreading mid-body. Eye cloudy. Odour developing.`;
-  if(sp<70) return`Day ${day} — Wide coverage. Eye turning reddish. Degrading.`;
-  if(sp<85) return`Day ${day} — Heavy spoilage. Eye red-opaque. Strong odour.`;
-  return `Day ${day} — Complete putrefaction. Inedible and hazardous.`;
-}
-function markCol(sp){return sp<35?'#c87830':sp<55?'#9a5218':sp<75?'#6a2e08':'#3a1404';}
 
-/* ── CARDS ── */
-function buildCards(){
-  const row=document.getElementById('fishRow');
-  row.innerHTML='';
-  if(!Object.keys(allFish).length){row.innerHTML='<div style="color:var(--muted);padding:.5rem;font-size:13px">No fish records</div>';return;}
-  Object.entries(allFish).forEach(([id,fish])=>{
-    const age=calcAge(fish.catchDate);
-    const sp=calcSpoilage(age,fish);
-    const{label,bg,fg,brd}=statusInfo(sp);
-    const c=document.createElement('div');
-    c.className='fish-card'+(id===selId?' active':'');
-    c.innerHTML=`<div class="fc-id">${id}</div><div class="fc-sp">${fish.species}</div><div class="fc-sp">Day ${age}</div>
-      <div class="fc-pill" style="background:${bg};color:${fg};border-color:${brd}">${label} — ${Math.round(sp)}%</div>`;
-    c.onclick=()=>selectFish(id);
+// Final spoilage % from real ΔE measurements
+function spoilageFromDeltaE(fish) {
+  const b = fish.bodyDeltaE, e = fish.eyeDeltaE;
+  if (b == null || e == null) return null;
+  // Body ΔE: threshold 6.0 = start of concern, maps linearly
+  // Eye  ΔE: threshold 10.0, more sensitive indicator
+  const bs = Math.min(100, (b / 6.0) * 33);
+  const es = Math.min(100, (e / 10.0) * 33);
+  return +(bs * 0.4 + es * 0.6).toFixed(1);
+}
+
+// Spoilage at a given day on the 0→MAX timeline
+// Day 0 = fresh (0%). Day = currentAge = measured spoilage %.
+// This drives the fish drawing and all UI.
+function spoilAtDay(day, fish) {
+  const age = calcAge(fish.catchDate);
+  const finalSpoil = spoilageFromDeltaE(fish);
+
+  if (finalSpoil != null && age > 0) {
+    // Linear ramp from 0% (day 0) to finalSpoil% (day = age)
+    // Beyond current age: extrapolate gently
+    const ratePerDay = finalSpoil / age;
+    const sp = ratePerDay * day;
+    return +Math.min(100, sp).toFixed(1);
+  }
+
+  // Fallback: day-based formula (when no ΔE data)
+  if (day <= 7)  return Math.min(20, (day/7)*20);
+  if (day <= 14) return 20 + ((day-7)/7)*20;
+  if (day <= 30) return 40 + ((day-14)/16)*30;
+  if (day <= 40) return 70 + ((day-30)/10)*20;
+  return Math.min(100, 90 + ((day-40)/10)*10);
+}
+
+// Spoilage card value (uses real ΔE if available, else day-based)
+function cardSpoilage(fish) {
+  const de = spoilageFromDeltaE(fish);
+  if (de != null) return de;
+  return spoilAtDay(calcAge(fish.catchDate), fish);
+}
+
+function statusInfo(sp) {
+  if (sp < 20) return { label:"FRESH",    bg:"rgba(0,232,122,.1)",  fg:"#00e87a", brd:"rgba(0,232,122,.35)" };
+  if (sp < 40) return { label:"GOOD",     bg:"rgba(255,176,32,.1)", fg:"#ffb020", brd:"rgba(255,176,32,.35)" };
+  if (sp < 70) return { label:"MODERATE", bg:"rgba(255,140,0,.1)",  fg:"#ff8c00", brd:"rgba(255,140,0,.35)" };
+  return              { label:"CRITICAL", bg:"rgba(255,78,78,.1)",  fg:"#ff4e4e", brd:"rgba(255,78,78,.35)" };
+}
+
+function deClass(v, thresh) {
+  if (v == null) return '';
+  return v > thresh*3 ? 'critical' : v > thresh ? 'warning' : 'good';
+}
+
+function recommendation(sp) {
+  return sp < 30 ? 'sell' : sp < 60 ? 'hold' : 'discard';
+}
+
+function eyeState(sp) {
+  // Eye clouds progressively. At sp>=60 redness starts.
+  const eC = Math.min(1, sp / 80);
+  const eR = sp > 55 ? Math.min(1, (sp - 55) / 40) : 0;
+  return { eC, eR };
+}
+
+function skinLabel(sp) {
+  if (sp < 8)  return "Bright silver";
+  if (sp < 22) return "Silver";
+  if (sp < 38) return "Slight dull";
+  if (sp < 52) return "Dull grey";
+  if (sp < 66) return "Grey-brown";
+  if (sp < 82) return "Dark brown";
+  return "Near-black";
+}
+
+function eyeLabel(sp) {
+  if (sp < 12) return "Crystal clear";
+  if (sp < 28) return "Clear";
+  if (sp < 44) return "Slight cloud";
+  if (sp < 58) return "Milky";
+  if (sp < 72) return "Red-cloudy";
+  return "Collapsed";
+}
+
+function dayDesc(day, sp) {
+  const d = `Day ${day}`;
+  if (sp < 8)  return `${d} — Fresh catch. Clean outline, vivid clear eye. No spoilage marks.`;
+  if (sp < 22) return `${d} — Still fresh. First faint marks appearing near the gill edge.`;
+  if (sp < 38) return `${d} — Early spoilage at gills. Eye beginning to cloud. Sheen fading.`;
+  if (sp < 52) return `${d} — Spreading to mid-body. Eye noticeably cloudy. Odour developing.`;
+  if (sp < 66) return `${d} — Wide coverage. Eye turning reddish. Texture degrading.`;
+  if (sp < 82) return `${d} — Heavy spoilage. Eye red-opaque. Body nearly fully marked.`;
+  return `${d} — Complete putrefaction. Inedible and hazardous.`;
+}
+
+function markColour(sp) {
+  if (sp < 30) return '#c87830';
+  if (sp < 52) return '#9a5218';
+  if (sp < 74) return '#6a2e08';
+  return '#3a1404';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  FISH SELECTOR CARDS
+// ═══════════════════════════════════════════════════════════
+function buildCards() {
+  const row = document.getElementById('fishRow');
+  row.innerHTML = '';
+  const ids = Object.keys(allFish);
+  if (!ids.length) {
+    row.innerHTML = '<div style="color:var(--muted);padding:.5rem;font-size:13px">No fish records found</div>';
+    return;
+  }
+  ids.forEach(id => {
+    const fish = allFish[id];
+    const sp   = cardSpoilage(fish);
+    const age  = calcAge(fish.catchDate);
+    const { label, bg, fg, brd } = statusInfo(sp);
+    const c = document.createElement('div');
+    c.className = 'fish-card' + (id === selId ? ' active' : '');
+    c.innerHTML = `
+      <div class="fc-id">${id}</div>
+      <div class="fc-sp">${fish.species}</div>
+      <div class="fc-sp">Day ${age}</div>
+      <div class="fc-pill" style="background:${bg};color:${fg};border-color:${brd}">
+        ${label} — ${Math.round(sp)}%
+      </div>`;
+    c.onclick = () => selectFish(id);
     row.appendChild(c);
   });
-  if(!selId&&Object.keys(allFish).length) selectFish(Object.keys(allFish)[0]);
+  // Auto-select first fish
+  if (!selId && ids.length) selectFish(ids[0]);
 }
-function selectFish(id){
-  selId=id;
-  document.querySelectorAll('.fish-card').forEach((c,i)=>c.classList.toggle('active',Object.keys(allFish)[i]===id));
-  cur=Math.min(MAX,calcAge(allFish[id].catchDate));
-  document.getElementById('sl').value=cur;
+
+function selectFish(id) {
+  selId = id;
+  document.querySelectorAll('.fish-card').forEach((c, i) => {
+    c.classList.toggle('active', Object.keys(allFish)[i] === id);
+  });
+  // Jump slider to current real age of the fish
+  cur = Math.min(MAX, calcAge(allFish[id].catchDate));
+  document.getElementById('sl').value = cur;
   renderAll();
 }
 
-/* ── RENDER ── */
-function renderAll(){
-  if(!selId||!allFish[selId]){document.getElementById('mainGrid').style.display='none';return;}
-  document.getElementById('mainGrid').style.display='grid';
-  const fish=allFish[selId];
-  const age=calcAge(fish.catchDate);
-  const sp=calcSpoilDay(cur,fish);
-  const{label,bg,fg,brd}=statusInfo(sp);
-  const{eC,eR}=eyeState(sp);
-  const r=rec(sp);
+// ═══════════════════════════════════════════════════════════
+//  RENDER — updates ALL UI and redraws fish
+// ═══════════════════════════════════════════════════════════
+function renderAll() {
+  if (!selId || !allFish[selId]) {
+    document.getElementById('mainGrid').style.display = 'none';
+    return;
+  }
+  document.getElementById('mainGrid').style.display = 'grid';
 
-  document.getElementById('fishId').textContent=selId;
-  document.getElementById('fishSub').textContent=`${fish.species} · ${fish.location||'—'} · Caught ${fish.catchDate}`;
-  const spl=document.getElementById('statusPill');
-  spl.textContent=`STATUS: ${label}`;spl.style.background=bg;spl.style.color=fg;spl.style.borderColor=fg;
+  const fish = allFish[selId];
+  const age  = calcAge(fish.catchDate);
+  const sp   = spoilAtDay(cur, fish);       // spoilage at current slider day
+  const { label, bg, fg, brd } = statusInfo(sp);
+  const { eC, eR } = eyeState(sp);
+  const rec  = recommendation(sp);
 
-  document.getElementById('badgesRow').innerHTML=
-    `<span class="bdg" style="background:${bg};color:${fg};border-color:${brd}">Skin: ${skinLbl(sp)}</span>
-     <span class="bdg" style="background:${bg};color:${fg};border-color:${brd}">Eye: ${eyeLbl(sp)}</span>`;
+  // Header
+  document.getElementById('fishId').textContent = selId;
+  document.getElementById('fishSub').textContent =
+    `${fish.species} · ${fish.location || '—'} · Caught ${fish.catchDate}`;
 
-  const qs=fish.qualityScore||Math.round(5-sp/25);
-  document.getElementById('stars').innerHTML=[1,2,3,4,5].map(i=>`<span class="star ${i<=qs?'on':'off'}">★</span>`).join('');
+  const spl = document.getElementById('statusPill');
+  spl.textContent = `STATUS: ${label}`;
+  spl.style.background = bg; spl.style.color = fg; spl.style.borderColor = fg;
 
-  const bde=fish.bodyDeltaE,ede=fish.eyeDeltaE,pv=fish.thermalVariance;
-  const db_=document.getElementById('deBody');db_.textContent=bde!=null?bde.toFixed(2):'—';db_.className='de-value '+deClass(bde,6);
-  const de_=document.getElementById('deEye');de_.textContent=ede!=null?ede.toFixed(2):'—';de_.className='de-value '+deClass(ede,10);
-  const dp_=document.getElementById('dePeak');dp_.textContent=pv!=null?pv.toFixed(1):'—';dp_.className='de-value '+deClass(pv,500);
+  document.getElementById('badgesRow').innerHTML = `
+    <span class="bdg" style="background:${bg};color:${fg};border-color:${brd}">Skin: ${skinLabel(sp)}</span>
+    <span class="bdg" style="background:${bg};color:${fg};border-color:${brd}">Eye: ${eyeLabel(sp)}</span>`;
 
-  document.getElementById('mAge').textContent=age;
-  document.getElementById('mTemp').textContent=fish.currentTemperature??'—';
+  // Stars — quality score from DB
+  const qs = Math.max(1, Math.min(5, fish.qualityScore || Math.round(5 - sp/25)));
+  document.getElementById('stars').innerHTML =
+    [1,2,3,4,5].map(i => `<span class="star ${i<=qs?'on':'off'}">★</span>`).join('');
 
-  const qc=sp<35?'#00e87a':sp<65?'#ffb020':'#ff4e4e';
-  const bc=sp<35?'#00e87a':sp<65?'#ffb020':'#ff4e4e';
-  setBar('bSkin',Math.max(1,100-sp),qc);setBar('bEye',Math.max(1,100-eC*100),qc);setBar('bSpoil',Math.round(sp),bc);
-  document.getElementById('descRow').textContent=desc(cur,sp);
+  // ΔE values — always show REAL measured values, not day-adjusted
+  const bde = fish.bodyDeltaE, ede = fish.eyeDeltaE, pv = fish.thermalVariance;
+  const deB = document.getElementById('deBody');
+  deB.textContent = bde != null ? bde.toFixed(2) : '—';
+  deB.className   = 'de-value ' + deClass(bde, 6);
 
-  ['sell','hold','discard'].forEach(x=>{
-    document.getElementById('rec'+x[0].toUpperCase()+x.slice(1)).classList.toggle('active',x===r);
+  const deE = document.getElementById('deEye');
+  deE.textContent = ede != null ? ede.toFixed(2) : '—';
+  deE.className   = 'de-value ' + deClass(ede, 10);
+
+  const deP = document.getElementById('dePeak');
+  deP.textContent = pv != null ? pv.toFixed(1) : '—';
+  deP.className   = 'de-value ' + deClass(pv, 500);
+
+  // Metrics
+  document.getElementById('mAge').textContent  = age;
+  document.getElementById('mTemp').textContent = fish.currentTemperature ?? '—';
+
+  // Progress bars
+  const skinQ = Math.max(1, Math.round(100 - sp));
+  const eyeQ  = Math.max(1, Math.round(100 - eC * 100));
+  const qc = sp < 35 ? '#00e87a' : sp < 65 ? '#ffb020' : '#ff4e4e';
+  const bc = sp < 35 ? '#00e87a' : sp < 65 ? '#ffb020' : '#ff4e4e';
+  setBar('bSkin',  skinQ, qc);
+  setBar('bEye',   eyeQ,  qc);
+  setBar('bSpoil', Math.round(sp), bc);
+
+  // Description
+  document.getElementById('descRow').textContent = dayDesc(cur, sp);
+
+  // Recommendation buttons
+  ['sell','hold','discard'].forEach(r => {
+    document.getElementById('rec' + r[0].toUpperCase() + r.slice(1))
+      .classList.toggle('active', r === rec);
   });
 
-  const logs=[['Catch date',fish.catchDate||'—'],['Location',fish.location||'—'],
-    ['Processing',fish.processingMethod||'—'],['Quality',(fish.qualityScore||'—')+'/5'],
-    ['Samples',fish.samplesAnalyzed||'—'],['Method',fish.segmentationMethod||'—'],
-    ['Temp log',fish.temperatureLog||'—'],['Last analysed',fish.lastAnalyzed?fish.lastAnalyzed.slice(0,16).replace('T',' '):'—']];
-  document.getElementById('logGrid').innerHTML=logs.map(([k,v])=>
-    `<div class="log-item"><span class="log-key">${k}</span><span class="log-val">${v}</span></div>`).join('');
+  // Log grid
+  const logs = [
+    ['Catch date',    fish.catchDate || '—'],
+    ['Location',      fish.location  || '—'],
+    ['Processing',    fish.processingMethod || '—'],
+    ['Quality',       (fish.qualityScore || '—') + '/5'],
+    ['Samples',       fish.samplesAnalyzed || '—'],
+    ['Method',        fish.segmentationMethod || '—'],
+    ['Temp log',      fish.temperatureLog || '—'],
+    ['Last analysed', fish.lastAnalyzed
+      ? fish.lastAnalyzed.slice(0,16).replace('T',' ') : '—'],
+  ];
+  document.getElementById('logGrid').innerHTML = logs.map(([k,v]) =>
+    `<div class="log-item">
+       <span class="log-key">${k}</span>
+       <span class="log-val">${v}</span>
+     </div>`).join('');
 
+  // Day strip
   buildStrip();
-  document.getElementById('slv').textContent=`${cur}/15`;
-  document.getElementById('sl').value=cur;
-  drawFish(sp,eC,eR);
-}
-function setBar(id,pct,col){const el=document.getElementById(id);el.style.width=pct+'%';el.style.background=col;}
 
-function buildStrip(){
-  const strip=document.getElementById('dayStrip');strip.innerHTML='';
-  for(let i=0;i<=MAX;i++){
-    const sp=calcSpoilDay(i,allFish[selId]);
-    const{fg,bg}=statusInfo(sp);
-    const el=document.createElement('div');
-    el.className='ds'+(i===cur?' on':'');
-    el.style.background=bg;
-    el.innerHTML=`<div class="dd" style="color:${fg}">D${i}</div><div class="dp" style="color:${fg}">${Math.round(sp)}%</div>`;
-    el.onclick=()=>{if(playing)sP();gT(i);};
+  // Slider label
+  document.getElementById('slv').textContent = `${cur}/${MAX}`;
+  document.getElementById('sl').value = cur;
+
+  // Draw fish — use requestAnimationFrame to guarantee layout is done
+  requestAnimationFrame(() => drawFish(sp, eC, eR));
+}
+
+function setBar(id, pct, col) {
+  const el = document.getElementById(id);
+  el.style.width      = Math.round(pct) + '%';
+  el.style.background = col;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  DAY STRIP
+// ═══════════════════════════════════════════════════════════
+function buildStrip() {
+  const strip = document.getElementById('dayStrip');
+  strip.innerHTML = '';
+  for (let i = 0; i <= MAX; i++) {
+    const sp = spoilAtDay(i, allFish[selId]);
+    const { fg, bg } = statusInfo(sp);
+    const el = document.createElement('div');
+    el.className = 'ds' + (i === cur ? ' on' : '');
+    el.style.background = bg;
+    el.innerHTML =
+      `<div class="dd" style="color:${fg}">D${i}</div>
+       <div class="dp" style="color:${fg}">${Math.round(sp)}%</div>`;
+    el.onclick = () => { if (playing) sP(); gT(i); };
     strip.appendChild(el);
   }
-  const ac=strip.querySelector('.on');
-  if(ac) ac.scrollIntoView({inline:'nearest',block:'nearest'});
+  const ac = strip.querySelector('.on');
+  if (ac) ac.scrollIntoView({ inline: 'nearest', block: 'nearest' });
 }
 
-/* ── FISH DRAWING ── */
-function mkRng(seed){let s=(seed%2147483647+2147483647)%2147483647||1;return()=>{s=s*16807%2147483647;return(s-1)/2147483646;};}
-function drawMark(ctx,x,y,len,angle,col,alpha,seed){
-  const rg=mkRng(seed);
-  ctx.save();ctx.globalAlpha=alpha;ctx.strokeStyle=col;ctx.lineWidth=0.9;ctx.lineCap='round';
-  ctx.beginPath();let px=x,py=y,a=angle;ctx.moveTo(px,py);
-  const segs=Math.max(4,Math.floor(len/4));
-  for(let i=0;i<segs;i++){
-    a+=(rg()-0.5)*0.5;const step=len/segs;
-    px+=Math.cos(a)*step;py+=Math.sin(a)*step;ctx.lineTo(px,py);
-    if(i%3===1){const nx=Math.cos(a+Math.PI/2),ny=Math.sin(a+Math.PI/2);
-      ctx.moveTo(px-nx*2.5,py-ny*2.5);ctx.lineTo(px+nx*2.5,py+ny*2.5);ctx.moveTo(px,py);}
-  }
-  ctx.stroke();ctx.restore();
+// ═══════════════════════════════════════════════════════════
+//  FISH CANVAS DRAWING
+//  Internal coordinate space: 660 × 220
+//  Canvas is sized from canvasWrap.offsetWidth after layout
+// ═══════════════════════════════════════════════════════════
+function mkRng(seed) {
+  let s = (seed % 2147483647 + 2147483647) % 2147483647 || 1;
+  return () => { s = s * 16807 % 2147483647; return (s - 1) / 2147483646; };
 }
-const ZONES=[
-  {cx:500,cy:110,rx:60,ry:46,s:0, f:35},{cx:462,cy:70, rx:48,ry:26,s:5, f:40},
-  {cx:460,cy:150,rx:48,ry:26,s:5, f:40},{cx:396,cy:50, rx:52,ry:21,s:15,f:50},
-  {cx:394,cy:170,rx:50,ry:21,s:15,f:50},{cx:324,cy:42, rx:50,ry:20,s:25,f:60},
-  {cx:322,cy:178,rx:48,ry:20,s:25,f:60},{cx:252,cy:50, rx:46,ry:22,s:35,f:70},
-  {cx:250,cy:170,rx:44,ry:22,s:35,f:70},{cx:184,cy:68, rx:42,ry:25,s:45,f:80},
-  {cx:182,cy:152,rx:40,ry:25,s:45,f:80},{cx:128,cy:96, rx:36,ry:26,s:55,f:88},
-  {cx:126,cy:124,rx:36,ry:26,s:55,f:88},{cx:84, cy:110,rx:44,ry:44,s:65,f:95},
-];
-function fishPath(){
-  const p=new Path2D();
-  function sy(y){return(y-150)*0.72+110;}
-  p.moveTo(572,sy(150));
-  p.bezierCurveTo(568,sy(124),548,sy(96),518,sy(76));p.bezierCurveTo(496,sy(60),468,sy(50),438,sy(44));
-  p.bezierCurveTo(420,sy(40),408,sy(34),396,sy(22));p.bezierCurveTo(382,sy(8),364,sy(2),346,sy(4));
-  p.bezierCurveTo(328,sy(6),314,sy(14),306,sy(26));p.bezierCurveTo(298,sy(36),292,sy(44),280,sy(50));
-  p.bezierCurveTo(256,sy(56),224,sy(62),192,sy(70));p.bezierCurveTo(160,sy(78),134,sy(90),116,sy(108));
-  p.bezierCurveTo(106,sy(118),100,sy(132),100,sy(150));
-  p.bezierCurveTo(100,sy(144),96,sy(134),86,sy(118));p.bezierCurveTo(76,sy(102),56,sy(82),36,sy(62));
-  p.bezierCurveTo(52,sy(90),64,sy(116),72,sy(138));p.bezierCurveTo(76,sy(144),78,sy(148),78,sy(150));
-  p.bezierCurveTo(78,sy(152),76,sy(156),72,sy(162));p.bezierCurveTo(64,sy(184),52,sy(210),36,sy(238));
-  p.bezierCurveTo(56,sy(218),76,sy(198),86,sy(182));p.bezierCurveTo(96,sy(166),100,sy(156),100,sy(150));
-  p.bezierCurveTo(100,sy(168),106,sy(182),116,sy(192));p.bezierCurveTo(134,sy(210),160,sy(222),192,sy(230));
-  p.bezierCurveTo(224,sy(238),258,sy(244),280,sy(250));p.bezierCurveTo(294,sy(252),306,sy(258),316,sy(270));
-  p.bezierCurveTo(322,sy(276),330,sy(276),336,sy(270));p.bezierCurveTo(346,sy(258),356,sy(252),368,sy(250));
-  p.bezierCurveTo(400,sy(246),438,sy(252),468,sy(244));p.bezierCurveTo(498,sy(236),524,sy(218),540,sy(198));
-  p.bezierCurveTo(548,sy(192),550,sy(182),546,sy(172));p.bezierCurveTo(542,sy(162),544,sy(156),550,sy(152));
-  p.bezierCurveTo(556,sy(148),560,sy(150),566,sy(150));p.bezierCurveTo(570,sy(150),572,sy(150),572,sy(150));
-  p.closePath();return p;
-}
-function drawFish(sp,eC,eR){
-  const W=CV.offsetWidth||660,H=Math.round(W*(IH/IW));
-  CV.width=W;CV.height=H;const sc=W/IW;
-  CX.clearRect(0,0,W,H);CX.fillStyle='#000';CX.fillRect(0,0,W,H);
-  CX.save();CX.scale(sc,sc);
-  const fish=fishPath(),col=markCol(sp);
-  CX.save();CX.clip(fish);
-  for(const z of ZONES){
-    if(sp<=z.s) continue;
-    const t=Math.min(1,(sp-z.s)/(z.f-z.s));if(t<=0) continue;
-    const count=Math.floor(t*t*100)+2,zrng=mkRng(z.cx*31+z.cy*17);
-    for(let i=0;i<count;i++){
-      const ang=zrng()*Math.PI*2,rad=Math.sqrt(zrng());
-      const bx=z.cx+rad*z.rx*(zrng()*2-1),by=z.cy+rad*z.ry*(zrng()*2-1);
-      drawMark(CX,bx,by,5+zrng()*15*Math.max(0.4,t),zrng()*Math.PI*2,col,Math.min(0.92,0.28+t*0.68),i*113+z.cx+Math.floor(sp));
+
+function drawMark(ctx, x, y, len, angle, col, alpha, seed) {
+  const rg = mkRng(seed);
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.strokeStyle = col;
+  ctx.lineWidth   = 0.9;
+  ctx.lineCap     = 'round';
+  ctx.beginPath();
+  let px = x, py = y, a = angle;
+  ctx.moveTo(px, py);
+  const segs = Math.max(4, Math.floor(len / 4));
+  for (let i = 0; i < segs; i++) {
+    a += (rg() - 0.5) * 0.5;
+    const step = len / segs;
+    px += Math.cos(a) * step;
+    py += Math.sin(a) * step;
+    ctx.lineTo(px, py);
+    if (i % 3 === 1) {
+      const nx = Math.cos(a + Math.PI/2), ny = Math.sin(a + Math.PI/2);
+      ctx.moveTo(px - nx*2.5, py - ny*2.5);
+      ctx.lineTo(px + nx*2.5, py + ny*2.5);
+      ctx.moveTo(px, py);
     }
   }
-  if(sp>=65){const extra=Math.floor((sp-60)*2.2),erng=mkRng(Math.floor(sp)*97+511);
-    for(let i=0;i<extra;i++) drawMark(CX,70+erng()*490,20+erng()*180,3+erng()*14,erng()*Math.PI*2,col,0.22+erng()*0.45,i*71+Math.floor(sp)*19);}
-  CX.restore();
-  CX.strokeStyle='#ffffff';CX.lineWidth=2.2;CX.lineJoin='round';CX.lineCap='round';CX.stroke(fish);
-  function sy(y){return(y-150)*0.72+110;}
-  const ex=504,ey=sy(110),er=13;
-  CX.strokeStyle='#fff';CX.lineWidth=2.0;CX.beginPath();CX.arc(ex,ey,er,0,Math.PI*2);CX.stroke();
-  if(eC<0.45){
-    CX.fillStyle='#000';CX.beginPath();CX.arc(ex,ey,er-1,0,Math.PI*2);CX.fill();
-    CX.fillStyle='#fff';CX.beginPath();CX.arc(ex,ey,Math.max(1.5,er*0.38*(1-eC*0.5)),0,Math.PI*2);CX.fill();
-    if(eC<0.3){CX.globalAlpha=(1-eC/0.3)*0.6;CX.beginPath();CX.arc(ex-4,ey-4,2.2,0,Math.PI*2);CX.fill();CX.globalAlpha=1;}
-  }else{
-    if(eC>0){CX.fillStyle=`rgba(135,122,112,${eC*0.82})`;CX.beginPath();CX.arc(ex,ey,er-1,0,Math.PI*2);CX.fill();}
-    if(eR>0){CX.fillStyle=`rgba(136,16,12,${eR*0.88})`;CX.beginPath();CX.arc(ex,ey,er-1,0,Math.PI*2);CX.fill();}
-    CX.strokeStyle=`rgba(255,255,255,${Math.max(0.1,1-eC)})`;CX.lineWidth=1.8;CX.beginPath();CX.arc(ex,ey,er,0,Math.PI*2);CX.stroke();
-  }
-  CX.restore();
+  ctx.stroke();
+  ctx.restore();
 }
 
-/* ── CONTROLS ── */
-function gT(day){cur=Math.max(0,Math.min(MAX,day));renderAll();}
-function go(d){if(playing)sP();gT(cur+d);}
-function tp(){if(playing)sP();else stP();}
-function stP(){playing=true;document.getElementById('playBtn').textContent='⏸ Pause';document.getElementById('playBtn').classList.add('on');if(cur>=MAX)cur=0;step();}
-function sP(){playing=false;document.getElementById('playBtn').textContent='▶ Play';document.getElementById('playBtn').classList.remove('on');clearTimeout(tmr);}
-function step(){if(!playing)return;renderAll();if(cur>=MAX){sP();return;}cur++;const ms={Slow:1400,Normal:800,Fast:280}[document.getElementById('spd').value]||800;tmr=setTimeout(step,ms);}
+// Spoilage zones — mapped to 660×220 canvas
+// s = spoilage% at which zone starts, f = spoilage% at which zone is fully covered
+// Zones start at gills (right/head side) and spread toward tail (left)
+const ZONES = [
+  { cx:500, cy:110, rx:62, ry:48, s:0,  f:25 },  // head/gill — first
+  { cx:460, cy:72,  rx:50, ry:28, s:8,  f:35 },  // upper head
+  { cx:458, cy:148, rx:50, ry:28, s:8,  f:35 },  // lower head
+  { cx:394, cy:52,  rx:54, ry:22, s:18, f:45 },  // upper mid-body
+  { cx:392, cy:168, rx:52, ry:22, s:18, f:45 },  // lower mid-body
+  { cx:322, cy:42,  rx:52, ry:21, s:28, f:55 },  // upper body
+  { cx:320, cy:178, rx:50, ry:21, s:28, f:55 },  // lower body
+  { cx:250, cy:52,  rx:48, ry:23, s:38, f:65 },  // upper body rear
+  { cx:248, cy:168, rx:46, ry:23, s:38, f:65 },  // lower body rear
+  { cx:182, cy:70,  rx:44, ry:26, s:48, f:75 },  // upper near tail
+  { cx:180, cy:150, rx:42, ry:26, s:48, f:75 },  // lower near tail
+  { cx:126, cy:98,  rx:38, ry:27, s:58, f:85 },  // tail root top
+  { cx:124, cy:122, rx:38, ry:27, s:58, f:85 },  // tail root bottom
+  { cx:82,  cy:110, rx:46, ry:46, s:68, f:95 },  // tail
+];
 
-window.addEventListener('resize',()=>{if(selId&&allFish[selId]){const sp=calcSpoilDay(cur,allFish[selId]);const{eC,eR}=eyeState(sp);drawFish(sp,eC,eR);}});
+// Fish silhouette — elegant sharp shape, scaled to IH=220 (centre y=110)
+function fishPath() {
+  const p = new Path2D();
+  function sy(y) { return (y - 150) * 0.72 + 110; }
+  p.moveTo(572, sy(150));
+  p.bezierCurveTo(568,sy(124), 548,sy(96),  518,sy(76));
+  p.bezierCurveTo(496,sy(60),  468,sy(50),  438,sy(44));
+  p.bezierCurveTo(420,sy(40),  408,sy(34),  396,sy(22));
+  p.bezierCurveTo(382,sy(8),   364,sy(2),   346,sy(4));
+  p.bezierCurveTo(328,sy(6),   314,sy(14),  306,sy(26));
+  p.bezierCurveTo(298,sy(36),  292,sy(44),  280,sy(50));
+  p.bezierCurveTo(256,sy(56),  224,sy(62),  192,sy(70));
+  p.bezierCurveTo(160,sy(78),  134,sy(90),  116,sy(108));
+  p.bezierCurveTo(106,sy(118), 100,sy(132), 100,sy(150));
+  p.bezierCurveTo(100,sy(144), 96,sy(134),  86,sy(118));
+  p.bezierCurveTo(76,sy(102),  56,sy(82),   36,sy(62));
+  p.bezierCurveTo(52,sy(90),   64,sy(116),  72,sy(138));
+  p.bezierCurveTo(76,sy(144),  78,sy(148),  78,sy(150));
+  p.bezierCurveTo(78,sy(152),  76,sy(156),  72,sy(162));
+  p.bezierCurveTo(64,sy(184),  52,sy(210),  36,sy(238));
+  p.bezierCurveTo(56,sy(218),  76,sy(198),  86,sy(182));
+  p.bezierCurveTo(96,sy(166),  100,sy(156), 100,sy(150));
+  p.bezierCurveTo(100,sy(168), 106,sy(182), 116,sy(192));
+  p.bezierCurveTo(134,sy(210), 160,sy(222), 192,sy(230));
+  p.bezierCurveTo(224,sy(238), 258,sy(244), 280,sy(250));
+  p.bezierCurveTo(294,sy(252), 306,sy(258), 316,sy(270));
+  p.bezierCurveTo(322,sy(276), 330,sy(276), 336,sy(270));
+  p.bezierCurveTo(346,sy(258), 356,sy(252), 368,sy(250));
+  p.bezierCurveTo(400,sy(246), 438,sy(252), 468,sy(244));
+  p.bezierCurveTo(498,sy(236), 524,sy(218), 540,sy(198));
+  p.bezierCurveTo(548,sy(192), 550,sy(182), 546,sy(172));
+  p.bezierCurveTo(542,sy(162), 544,sy(156), 550,sy(152));
+  p.bezierCurveTo(556,sy(148), 560,sy(150), 566,sy(150));
+  p.bezierCurveTo(570,sy(150), 572,sy(150), 572,sy(150));
+  p.closePath();
+  return p;
+}
+
+function drawFish(sp, eC, eR) {
+  const IW = 660, IH = 220;
+  // Get size from wrapper — always correct after layout
+  const wrap = document.getElementById('canvasWrap');
+  const W = wrap.offsetWidth  || 500;
+  const H = wrap.offsetHeight || Math.round(W * IH / IW);
+  CV.width  = W;
+  CV.height = H;
+  const sc = W / IW;
+
+  CX.clearRect(0, 0, W, H);
+  CX.fillStyle = '#000000';
+  CX.fillRect(0, 0, W, H);
+  CX.save();
+  CX.scale(sc, sc);
+
+  const fish = fishPath();
+  const col  = markColour(sp);
+
+  // ── SPOILAGE MARKS — clipped inside body ────────────────
+  CX.save();
+  CX.clip(fish);
+
+  for (const z of ZONES) {
+    if (sp <= z.s) continue;
+    const t = Math.min(1, (sp - z.s) / (z.f - z.s));
+    if (t <= 0) continue;
+
+    // Mark count grows as t² — sparse early, dense late
+    const count = Math.floor(t * t * 110) + 2;
+    const zrng  = mkRng(z.cx * 31 + z.cy * 17);
+
+    for (let i = 0; i < count; i++) {
+      const ang = zrng() * Math.PI * 2;
+      const rad = Math.sqrt(zrng());
+      const bx  = z.cx + rad * z.rx * (zrng() * 2 - 1);
+      const by  = z.cy + rad * z.ry * (zrng() * 2 - 1);
+      const len = 5 + zrng() * 16 * Math.max(0.3, t);
+      const alpha = Math.min(0.92, 0.25 + t * 0.70);
+      drawMark(CX, bx, by, len, zrng() * Math.PI * 2, col, alpha,
+               i * 113 + z.cx + Math.floor(sp));
+    }
+  }
+
+  // Extra dense full-body layer at very high spoilage
+  if (sp >= 60) {
+    const extra = Math.floor((sp - 55) * 3.5);
+    const erng  = mkRng(Math.floor(sp) * 97 + 511);
+    for (let i = 0; i < extra; i++) {
+      const bx = 65 + erng() * 490;
+      const by = 18 + erng() * 185;
+      drawMark(CX, bx, by, 3 + erng()*14, erng()*Math.PI*2,
+               col, 0.20 + erng()*0.48, i * 71 + Math.floor(sp) * 19);
+    }
+  }
+
+  CX.restore(); // end clip
+
+  // ── WHITE OUTLINE — stroke only, no fill ────────────────
+  CX.strokeStyle = '#ffffff';
+  CX.lineWidth   = 2.2;
+  CX.lineJoin    = 'round';
+  CX.lineCap     = 'round';
+  CX.stroke(fish);
+
+  // ── EYE ────────────────────────────────────────────────
+  function sy(y) { return (y - 150) * 0.72 + 110; }
+  const ex = 504, ey = sy(110), er = 13;
+
+  // Outer ring
+  CX.strokeStyle = '#ffffff';
+  CX.lineWidth   = 2.0;
+  CX.beginPath();
+  CX.arc(ex, ey, er, 0, Math.PI * 2);
+  CX.stroke();
+
+  if (eC < 0.45) {
+    // Fresh: dark iris, white pupil dot, shine
+    CX.fillStyle = '#000000';
+    CX.beginPath(); CX.arc(ex, ey, er - 1, 0, Math.PI * 2); CX.fill();
+
+    const pr = Math.max(1.5, er * 0.40 * (1 - eC * 0.5));
+    CX.fillStyle = '#ffffff';
+    CX.beginPath(); CX.arc(ex, ey, pr, 0, Math.PI * 2); CX.fill();
+
+    // Shine highlight
+    if (eC < 0.30) {
+      CX.globalAlpha = (1 - eC / 0.30) * 0.65;
+      CX.beginPath(); CX.arc(ex - 4, ey - 4, 2.5, 0, Math.PI * 2); CX.fill();
+      CX.globalAlpha = 1;
+    }
+  } else {
+    // Spoiled: cloud then red fills
+    if (eC > 0) {
+      CX.fillStyle = `rgba(138, 125, 115, ${eC * 0.85})`;
+      CX.beginPath(); CX.arc(ex, ey, er - 1, 0, Math.PI * 2); CX.fill();
+    }
+    if (eR > 0) {
+      CX.fillStyle = `rgba(140, 18, 12, ${eR * 0.90})`;
+      CX.beginPath(); CX.arc(ex, ey, er - 1, 0, Math.PI * 2); CX.fill();
+    }
+    // Fading ring
+    CX.strokeStyle = `rgba(255, 255, 255, ${Math.max(0.08, 1 - eC)})`;
+    CX.lineWidth   = 1.8;
+    CX.beginPath(); CX.arc(ex, ey, er, 0, Math.PI * 2); CX.stroke();
+  }
+
+  CX.restore(); // end scale
+}
+
+// ═══════════════════════════════════════════════════════════
+//  PLAYBACK
+// ═══════════════════════════════════════════════════════════
+function gT(day) { cur = Math.max(0, Math.min(MAX, day)); renderAll(); }
+function go(d)   { if (playing) sP(); gT(cur + d); }
+function tp()    { if (playing) sP(); else stP(); }
+
+function stP() {
+  playing = true;
+  document.getElementById('playBtn').textContent = '⏸ Pause';
+  document.getElementById('playBtn').classList.add('on');
+  if (cur >= MAX) cur = 0;
+  step();
+}
+function sP() {
+  playing = false;
+  document.getElementById('playBtn').textContent = '▶ Play';
+  document.getElementById('playBtn').classList.remove('on');
+  clearTimeout(tmr);
+}
+function step() {
+  if (!playing) return;
+  renderAll();
+  if (cur >= MAX) { sP(); return; }
+  cur++;
+  const ms = { Slow:1400, Normal:800, Fast:280 }[document.getElementById('spd').value] || 800;
+  tmr = setTimeout(step, ms);
+}
+
+// Redraw on resize
+window.addEventListener('resize', () => {
+  if (selId && allFish[selId]) {
+    const sp = spoilAtDay(cur, allFish[selId]);
+    const { eC, eR } = eyeState(sp);
+    requestAnimationFrame(() => drawFish(sp, eC, eR));
+  }
+});
+
+// ═══════════════════════════════════════════════════════════
+//  BOOT
+// ═══════════════════════════════════════════════════════════
 init();
 </script>
 </body>
